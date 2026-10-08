@@ -1,0 +1,8 @@
+namespace Usagi.Core.Models;
+
+public enum UsageStatusLevel
+{
+    Safe,
+    Moderate,
+    Critical
+}

@@ -1,0 +1,68 @@
+# Publishes a release when a version tag is pushed:
+#
+#   git tag v1.2.0
+#   git push origin v1.2.0
+#
+# The app is built with the tag's version (so it knows it's 1.2.0), the tests run, and a
+# GitHub release is created with the zipped app attached and notes generated from the
+# commits since the previous release. The app's "Check for updates" button (Settings > About)
+# then offers it.
+#
+# A tag with a pre-release part (v1.3.0-beta.1) makes a pre-release, which the app's
+# update check skips: only full releases are offered to everyone.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Read the version from the tag
+        id: version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".Substring(1)
+          if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            throw "Tag ${{ github.ref_name }} isn't v<major>.<minor>.<patch>[-<pre-release>]."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "prerelease=$($version.Contains('-').ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+      - name: Test
+        run: dotnet test tests/Usagi.Tests -c Release
+
+      - name: Publish
+        run: >
+          dotnet publish src/Usagi.App -c Release -r win-x64 --self-contained false
+          -p:Version=${{ steps.version.outputs.version }} -o publish
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path publish/* -DestinationPath "Usagi-${{ steps.version.outputs.version }}-win-x64.zip"
+
+      - name: Create the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $arguments = @(
+            "${{ github.ref_name }}",
+            "Usagi-${{ steps.version.outputs.version }}-win-x64.zip",
+            "--title", "${{ github.ref_name }}",
+            "--generate-notes"
+          )
+          if ("${{ steps.version.outputs.prerelease }}" -eq "true") { $arguments += "--prerelease" }
+          gh release create @arguments

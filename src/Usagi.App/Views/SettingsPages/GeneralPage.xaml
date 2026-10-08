@@ -1,0 +1,27 @@
+<UserControl x:Class="Usagi.App.Views.SettingsPages.GeneralPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Usagi.App.Localization"
+             xmlns:vm="clr-namespace:Usagi.App.ViewModels"
+             xmlns:views="clr-namespace:Usagi.App.Views">
+    <!-- The General page of the settings window: what goes for the app as a whole — starting with Windows, its language and its colors. -->
+    <StackPanel>
+        <TextBlock Text="{loc:Tr Settings_SectionGeneral}" Style="{StaticResource SectionHeaderStyle}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel>
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding LaunchAtLoginEnabled}"
+                          views:SettingRow.Title="{loc:Tr Settings_LaunchAtLogin}" views:SettingRow.Description="{loc:Tr Settings_LaunchAtLoginDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr Settings_Language}" Description="{loc:Tr Settings_LanguageDescription}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.LanguageOptions}" SelectedValue="{Binding Language}" />
+                </views:SettingRow>
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr Settings_Theme}" Description="{loc:Tr Settings_ThemeDescription}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.ThemeOptions}" SelectedValue="{Binding Theme}" />
+                </views:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

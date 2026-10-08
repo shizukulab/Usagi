@@ -1,0 +1,158 @@
+<Window x:Class="Usagi.App.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:Usagi.App.Localization"
+        xmlns:pages="clr-namespace:Usagi.App.Views.SettingsPages"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        TextOptions.TextFormattingMode="Display"
+        FontSize="{StaticResource BodyFontSize}"
+        Title="{loc:Tr Settings_Title}"
+        Icon="/Assets/AppIcon.ico"
+        Width="800" Height="560" MinWidth="640" MinHeight="400"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackgroundBrush}">
+    <Window.Resources>
+        <!-- The creature as a nav icon, drawn in line like the glyphs beside it, in the icon's own
+             16 x 14 pixels rather than scaled down from MascotView's grid (which leaves it squat
+             and blurred): the outline of the body and its arms, then a stroke for each leg and each
+             eye, which are too thin at this size to be outlined themselves. On half pixels, so
+             the 1px lines are sharp. -->
+        <Geometry x:Key="MascotIconGeometry">M2.5,0.5H13.5V3.5H15.5V6.5H13.5V9.5H2.5V6.5H0.5V3.5H2.5Z M2.5,9.5V13 M6.5,9.5V13 M9.5,9.5V13 M13.5,9.5V13 M5.5,2V4 M10.5,2V4</Geometry>
+        <!-- ===== Obsidian-style settings navigation =====
+             A TabControl drawn as Obsidian's settings modal: a sidebar (background-secondary,
+             hairline on its right edge) with small group labels and icon + label items, and
+             the selected page on the right, scrolling on its own. -->
+        <Style x:Key="NavTabItemStyle" TargetType="TabItem">
+            <!-- Pages inherit this, so it must be the theme's text color, not the system default. -->
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="8" Height="30" Margin="0,0,0,2" Padding="8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Tag carries the item's icon: a Segoe Fluent glyph, or a shape of the
+                                     app's own where the font has none. Both take this control's color. -->
+                                <ContentControl x:Name="Glyph" Content="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                                Width="16" Focusable="False" VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextSecondaryBrush}">
+                                    <ContentControl.Resources>
+                                        <DataTemplate DataType="{x:Type sys:String}">
+                                            <TextBlock Text="{Binding}" FontFamily="{StaticResource IconFontFamily}" FontSize="14"
+                                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentControl}}" />
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type Geometry}">
+                                            <Path Data="{Binding}" Stretch="None" Width="16" Height="14" StrokeThickness="1" SnapsToDevicePixels="True"
+                                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ContentControl}}" />
+                                        </DataTemplate>
+                                    </ContentControl.Resources>
+                                </ContentControl>
+                                <TextBlock x:Name="Label" Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Style="{StaticResource BodyTextStyle}" Margin="10,0,0,0"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverOverlayBrush}" />
+                                <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavSelectedBrush}" />
+                                <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- A group label in the sidebar: a tab only in name, there to be read. Disabled, so it
+             can't be selected and the arrow keys pass over it. -->
+        <Style x:Key="NavGroupLabelStyle" TargetType="TabItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <TextBlock Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Style="{StaticResource CaptionTextStyle}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}" FontWeight="SemiBold"
+                                   TextOptions.TextFormattingMode="Ideal" Margin="8,14,0,6" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="NavTabControlStyle" TargetType="TabControl">
+            <Setter Property="ItemContainerStyle" Value="{StaticResource NavTabItemStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="216" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="{DynamicResource SidebarBackgroundBrush}"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+                                <StackPanel Margin="12,6,12,12" IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                            </Border>
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Focusable="False">
+                                <!-- As Windows 11's Settings: the page starts beside the sidebar and widens with
+                                     the window up to a limit, past which the room is left on the right — not
+                                     a column centered in a wide window, with as much empty space on its left. -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" MaxWidth="1064" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent" Margin="32,24,32,32" />
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <!-- Settings layout modeled on Obsidian's settings: a sidebar of pages on the left, and on
+         the right the selected page (one per file in Views/SettingsPages, sharing this window's
+         view model) as a heading and groups of rows; the rows' styles are in Themes/SettingsStyles.xaml. -->
+    <!-- The first tab is a group label, so the selection starts on the one after it. -->
+    <TabControl Style="{StaticResource NavTabControlStyle}" Background="Transparent" BorderThickness="0" SelectedIndex="1">
+        <!-- The app as a whole, and where its numbers come from. -->
+        <TabItem Header="{loc:Tr Settings_NavBasics}" Style="{StaticResource NavGroupLabelStyle}" />
+        <TabItem Header="{loc:Tr Settings_SectionGeneral}" Tag="&#xE713;">
+            <pages:GeneralPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_Account}" Tag="&#xE77B;">
+            <pages:AccountPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_SectionUsage}" Tag="&#xE9D2;">
+            <pages:UsagePage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_SectionNotifications}" Tag="&#xEA8F;">
+            <pages:NotificationsPage />
+        </TabItem>
+        <!-- What's shown, and then one page per place it's shown in, with everything about it:
+             the flyout, the taskbar bars, the creature. -->
+        <TabItem Header="{loc:Tr Settings_NavDisplay}" Style="{StaticResource NavGroupLabelStyle}" />
+        <TabItem Header="{loc:Tr Settings_Display}" Tag="&#xE890;">
+            <pages:DisplayPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_SectionWindow}" Tag="&#xE8A7;">
+            <pages:WindowPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_SectionTaskbarBar}" Tag="&#xE90E;">
+            <pages:TaskbarBarPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_Mascot}" Tag="{StaticResource MascotIconGeometry}">
+            <pages:MascotPage />
+        </TabItem>
+        <TabItem Header="{loc:Tr Settings_NavOther}" Style="{StaticResource NavGroupLabelStyle}" />
+        <TabItem Header="{loc:Tr Settings_About}" Tag="&#xE946;">
+            <pages:AboutPage />
+        </TabItem>
+    </TabControl>
+</Window>

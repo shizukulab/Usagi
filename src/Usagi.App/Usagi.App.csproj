@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(WindowsTargetFramework)</TargetFramework>
+    <SupportedOSPlatformVersion>$(WindowsSupportedOSPlatformVersion)</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WFO0003 wants the DPI mode set the WinForms way, which a WPF app never runs: the manifest is what sets it here. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <!-- Usagi.exe rather than Usagi.App.exe: the name shown in Task Manager, the Run key and toasts. -->
+    <AssemblyName>Usagi</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Usagi.Core\Usagi.Core.csproj" />
+    <ProjectReference Include="..\Usagi.Platform\Usagi.Platform.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+  </ItemGroup>
+
+  <!--
+    UseWindowsForms is only needed for Cursor.Position/Screen.FromPoint in WindowPositioner.
+    Its implicit global usings (System.Drawing, System.Windows.Forms) collide with WPF's own
+    (Application, UserControl, Brush, Color, MenuItem, ContextMenu, ...), so they're removed
+    here; code that needs a WinForms/GDI+ type references it explicitly or via a local alias
+    (see Views/WindowPositioner.cs, Tray/TrayIconController.cs).
+  -->
+  <ItemGroup>
+    <Using Remove="System.Drawing" />
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
+
+  <!-- Shipped next to the exe, so the release zip carries the license and the notices the bundled libraries ask for. -->
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,311 @@
+<UserControl x:Class="Usagi.App.Views.SettingsPages.DisplayPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Usagi.App.Localization"
+             xmlns:vm="clr-namespace:Usagi.App.ViewModels"
+             xmlns:views="clr-namespace:Usagi.App.Views"
+             xmlns:pages="clr-namespace:Usagi.App.Views.SettingsPages">
+    <!-- The Display page of the settings window: what is shown where — a tab for the window (the
+         flyout) and one for the taskbar bars — and then how the times and the tray icon are shown.
+         A tab has the place's parts (the creature, and each row's name, bar, percentage and reset
+         time) twice over, kept in step: in a preview, where a part is clicked to show or hide it and
+         dragged sideways to move it, and in a list, dragged up and down, each with an eye to show or
+         hide it. The cursor on a part in one marks it in the other. One of the creature, the bar and
+         the number always stays shown. -->
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="AccentTintBrush" Color="#D97757" Opacity="0.1" />
+
+        <!-- A line beside a part: where a dragged part would land, before it or after it. The state is
+             on the item's container (DragReorder), read from the line itself: its nearest
+             ContentPresenter is that container. -->
+        <Style x:Key="DropLineStyle" TargetType="Rectangle">
+            <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="RadiusX" Value="1.5" />
+            <Setter Property="RadiusY" Value="1.5" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style x:Key="DropBeforeStyle" TargetType="Rectangle" BasedOn="{StaticResource DropLineStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding (views:DragReorder.DropSide), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="Before">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DropAfterStyle" TargetType="Rectangle" BasedOn="{StaticResource DropLineStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding (views:DragReorder.DropSide), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="After">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!-- A part's whole item, faded while it's the one being dragged. -->
+        <Style x:Key="DraggedFadeStyle" TargetType="Grid">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding (views:DragReorder.IsDragged), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="True">
+                    <Setter Property="Opacity" Value="0.3" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- A part in the preview: drawn as it is for every row the place shows, so the parts line up
+             as rows do. Hidden parts stay, faint and outlined, for a click to bring back. -->
+        <DataTemplate x:Key="PreviewPartTemplate" DataType="{x:Type vm:PartItem}">
+            <Grid x:Name="Root" Style="{StaticResource DraggedFadeStyle}" Background="Transparent" Cursor="Hand" Margin="1,0" views:DragReorder.TracksHover="True">
+                <Border x:Name="Chip" CornerRadius="6" BorderThickness="1.5" BorderBrush="Transparent" Background="Transparent" Padding="5,3">
+                    <Grid x:Name="Content" VerticalAlignment="Center">
+                        <Border Visibility="{Binding IsMascot, Converter={StaticResource BoolToVisibility}}" VerticalAlignment="Center">
+                            <views:MascotView Style="{StaticResource MascotStyle}" IsHitTestVisible="False"
+                                              DataContext="{Binding DataContext.Live, RelativeSource={RelativeSource AncestorType=pages:DisplayPage}}" />
+                        </Border>
+                        <ItemsControl ItemsSource="{Binding DataContext.PreviewRows, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Focusable="False"
+                                      Visibility="{Binding IsLabels, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ShortLabel}" FontSize="13" Height="20" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding DataContext.PreviewRows, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Focusable="False"
+                                      Visibility="{Binding IsBar, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Height="20">
+                                        <ProgressBar Value="{Binding Percentage, Mode=OneWay}" Minimum="0" Maximum="100" Width="64" Height="5"
+                                                     VerticalAlignment="Center" Background="{DynamicResource ProgressTrackBrush}"
+                                                     Style="{StaticResource UsageProgressBarStyle}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding DataContext.PreviewRows, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Focusable="False"
+                                      Visibility="{Binding IsPercentage, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding PercentageText}" FontSize="13" Height="20" TextAlignment="Right"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding DataContext.PreviewRows, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Focusable="False"
+                                      Visibility="{Binding IsResetTime, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ShortResetText}" TextAlignment="{Binding ShortResetAlignment}" FontSize="13" Height="20"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+                <Rectangle x:Name="Dashes" RadiusX="6" RadiusY="6" StrokeThickness="1.2" StrokeDashArray="3 2"
+                           Stroke="{DynamicResource TextTertiaryBrush}" IsHitTestVisible="False" Visibility="Collapsed" />
+                <Rectangle x:Name="DropBefore" Style="{StaticResource DropBeforeStyle}" Width="3" HorizontalAlignment="Left" Margin="-3,2,0,2" />
+                <Rectangle x:Name="DropAfter" Style="{StaticResource DropAfterStyle}" Width="3" HorizontalAlignment="Right" Margin="0,2,-3,2" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsShown}" Value="False">
+                    <Setter TargetName="Content" Property="Opacity" Value="0.3" />
+                    <Setter TargetName="Dashes" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsHovered}" Value="True">
+                    <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                    <Setter TargetName="Chip" Property="Background" Value="{StaticResource AccentTintBrush}" />
+                    <Setter TargetName="Content" Property="Opacity" Value="1" />
+                    <Setter TargetName="Dashes" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- A part in the list: a small picture of it, its name and what it does, and an eye to show
+             or hide it. The whole row is dragged up and down. -->
+        <DataTemplate x:Key="ListPartTemplate" DataType="{x:Type vm:PartItem}">
+            <Grid x:Name="Root" Style="{StaticResource DraggedFadeStyle}" Background="Transparent" Cursor="Hand" views:DragReorder.TracksHover="True">
+                <Border x:Name="Tint" Background="Transparent" />
+                <Border x:Name="Divider" Style="{StaticResource CardDividerStyle}" VerticalAlignment="Top" />
+                <DockPanel Margin="10,0,12,0" MinHeight="56">
+                    <!-- The grip: six dots. -->
+                    <UniformGrid DockPanel.Dock="Left" Columns="2" Rows="3" Width="8" Height="12" VerticalAlignment="Center" Margin="0,0,10,0">
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                        <Ellipse Width="2.5" Height="2.5" Fill="{DynamicResource TextTertiaryBrush}" />
+                    </UniformGrid>
+                    <!-- A small picture of the part. -->
+                    <Grid x:Name="Thumb" DockPanel.Dock="Left" Width="48" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <Viewbox Height="22" Visibility="{Binding IsMascot, Converter={StaticResource BoolToVisibility}}">
+                            <views:MascotView Style="{StaticResource MascotStyle}" IsHitTestVisible="False" Carrot="False"
+                                              DataContext="{Binding DataContext.Live, RelativeSource={RelativeSource AncestorType=pages:DisplayPage}}" />
+                        </Viewbox>
+                        <TextBlock Text="5h" FontSize="11" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Visibility="{Binding IsLabels, Converter={StaticResource BoolToVisibility}}" />
+                        <ProgressBar Value="45" Width="36" Height="4" Style="{StaticResource PillProgressBarStyle}"
+                                     Foreground="{DynamicResource UsageSafeBrush}" Background="{DynamicResource ProgressTrackBrush}"
+                                     Visibility="{Binding IsBar, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="42%" FontSize="11" HorizontalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   Visibility="{Binding IsPercentage, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="2h 30m" FontSize="11" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Visibility="{Binding IsResetTime, Converter={StaticResource BoolToVisibility}}" />
+                    </Grid>
+                    <Button x:Name="Eye" DockPanel.Dock="Right" Style="{StaticResource IconButtonStyle}" Width="32" Height="32" VerticalAlignment="Center"
+                            Command="{Binding DataContext.ToggleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"
+                            ToolTip="{loc:Tr Settings_PartHide}" AutomationProperties.Name="{Binding Name}">
+                        <TextBlock x:Name="EyeGlyph" Text="&#xE890;" FontFamily="{StaticResource IconFontFamily}" FontSize="15" />
+                    </Button>
+                    <StackPanel VerticalAlignment="Center" Margin="0,8">
+                        <TextBlock x:Name="Name" Text="{Binding Name}" Style="{StaticResource RowTitleStyle}" />
+                        <TextBlock Text="{Binding Description}" Style="{StaticResource RowDescriptionStyle}" />
+                    </StackPanel>
+                </DockPanel>
+                <Rectangle x:Name="DropBefore" Style="{StaticResource DropBeforeStyle}" Height="3" VerticalAlignment="Top" Margin="8,-1,8,0" />
+                <Rectangle x:Name="DropAfter" Style="{StaticResource DropAfterStyle}" Height="3" VerticalAlignment="Bottom" Margin="8,0,8,-2" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <!-- No line over the first. -->
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                    <Setter TargetName="Divider" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsShown}" Value="False">
+                    <Setter TargetName="Name" Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                    <Setter TargetName="Thumb" Property="Opacity" Value="0.35" />
+                    <Setter TargetName="EyeGlyph" Property="Text" Value="&#xED1A;" />
+                    <Setter TargetName="EyeGlyph" Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                    <Setter TargetName="Eye" Property="ToolTip" Value="{loc:Tr Settings_PartShow}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                    <Setter TargetName="EyeGlyph" Property="Opacity" Value="0.35" />
+                    <Setter TargetName="Eye" Property="ToolTip" Value="{loc:Tr Settings_PartLocked}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsHovered}" Value="True">
+                    <Setter TargetName="Tint" Property="Background" Value="{StaticResource AccentTintBrush}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- A tab: one place, its preview, and its parts. -->
+        <DataTemplate x:Key="SurfaceOptionsTemplate" DataType="{x:Type vm:SurfaceOptions}">
+            <StackPanel>
+                <!-- The taskbar bars when they're off: nothing to choose until they're on, and a way to switch them on here. -->
+                <Border Padding="0,0,0,12" views:Reveal.IsShown="{Binding IsOff}">
+                    <Border Style="{StaticResource SettingsCardStyle}">
+                        <DockPanel Margin="16,14">
+                            <Button DockPanel.Dock="Right" Style="{StaticResource AccentButtonStyle}" Height="30" Margin="16,0,0,0"
+                                    VerticalAlignment="Center" Content="{loc:Tr Settings_TurnOn}"
+                                    Command="{Binding DataContext.TurnOnTaskbarBarCommand, RelativeSource={RelativeSource AncestorType=pages:DisplayPage}}" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{loc:Tr Settings_TaskbarBarOffTitle}" Style="{StaticResource RowTitleStyle}" />
+                                <TextBlock Text="{loc:Tr Settings_TaskbarBarOffDescription}" Style="{StaticResource RowDescriptionStyle}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </Border>
+
+                <StackPanel IsEnabled="{Binding IsAvailable}">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <Border Style="{StaticResource SettingsCardStyle}">
+                        <StackPanel>
+                            <!-- The preview to edit: click a part to show or hide it, drag it sideways to move it. -->
+                            <Border Margin="16,16,16,0" Padding="12,18" CornerRadius="8" MinHeight="96" Background="{DynamicResource WindowBackgroundBrush}">
+                                <ItemsControl ItemsSource="{Binding Parts}" Focusable="False" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              ItemTemplate="{StaticResource PreviewPartTemplate}"
+                                              views:DragReorder.IsEnabled="True" views:DragReorder.Orientation="Horizontal"
+                                              views:DragReorder.MoveCommand="{Binding MoveCommand}" views:DragReorder.ClickCommand="{Binding ToggleCommand}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Border>
+                            <TextBlock Text="{loc:Tr Settings_PreviewHint}" Style="{StaticResource RowDescriptionStyle}" Margin="16,8,16,0" />
+                            <!-- Why a click did nothing. -->
+                            <Border Padding="16,8,16,0" views:Reveal.IsShown="{Binding HasMessage}">
+                                <Border CornerRadius="6" Padding="10,7" Background="{StaticResource AccentTintBrush}">
+                                    <TextBlock Text="{Binding Message}" Style="{StaticResource CaptionTextStyle}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource AccentTextBrush}" />
+                                </Border>
+                            </Border>
+
+                            <!-- The window cuts its rows down like this only when compact. -->
+                            <TextBlock Text="{loc:Tr Settings_WindowCompactNote}" Style="{StaticResource RowDescriptionStyle}" Margin="16,8,16,0"
+                                       Visibility="{Binding IsWindow, Converter={StaticResource BoolToVisibility}}" />
+                            <Border Height="14" />
+
+                            <!-- Which rows: a choice of its own. -->
+                            <Border Style="{StaticResource CardDividerStyle}" />
+                            <views:SettingRow Title="{loc:Tr Settings_Rows}" Description="{loc:Tr Settings_RowsDescription}">
+                                <Border Style="{StaticResource SegmentedTrackStyle}">
+                                    <views:SegmentedPanel>
+                                        <RadioButton Style="{StaticResource SegmentedButtonStyle}" Content="{loc:Tr Settings_RowsBoth}"
+                                                     IsChecked="{Binding Rows, Converter={StaticResource EnumEquals}, ConverterParameter=Both}" />
+                                        <RadioButton Style="{StaticResource SegmentedButtonStyle}" Content="{loc:Tr Settings_RowsSession}"
+                                                     IsChecked="{Binding Rows, Converter={StaticResource EnumEquals}, ConverterParameter=SessionOnly}" />
+                                        <RadioButton Style="{StaticResource SegmentedButtonStyle}" Content="{loc:Tr Settings_RowsWeekly}"
+                                                     IsChecked="{Binding Rows, Converter={StaticResource EnumEquals}, ConverterParameter=WeeklyOnly}" />
+                                    </views:SegmentedPanel>
+                                </Border>
+                            </views:SettingRow>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- The same parts as a list: dragged up and down (the higher, the further left), an eye each. -->
+                    <TextBlock Text="{loc:Tr Settings_PartOrder}" Style="{StaticResource GroupHeaderStyle}" />
+                    <Border Style="{StaticResource SettingsCardStyle}" Padding="0,2">
+                        <ItemsControl ItemsSource="{Binding Parts}" Focusable="False" ItemTemplate="{StaticResource ListPartTemplate}"
+                                      views:DragReorder.IsEnabled="True" views:DragReorder.Orientation="Vertical"
+                                      views:DragReorder.MoveCommand="{Binding MoveCommand}" />
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <TextBlock Text="{loc:Tr Settings_Display}" Style="{StaticResource SectionHeaderStyle}" />
+        <TextBlock Text="{loc:Tr Settings_ItemsDescription}" Style="{StaticResource RowDescriptionStyle}" Margin="4,-6,0,12" />
+
+        <!-- The tabs: one place at a time. Both are built once and kept, and a switch only swaps which
+             is shown (sliding the new one in from its side: see the code-behind) — rebuilt on each
+             switch, every part and creature in it would flash up half set up for a frame. -->
+        <Border Style="{StaticResource SegmentedTrackStyle}" Margin="0,0,0,12">
+            <views:SegmentedPanel>
+                <RadioButton Style="{StaticResource SegmentedButtonStyle}" MinWidth="120" Content="{loc:Tr Settings_ColumnWindow}"
+                             IsChecked="{Binding SelectedSurface, Converter={StaticResource EnumEquals}, ConverterParameter=Window}" />
+                <RadioButton Style="{StaticResource SegmentedButtonStyle}" MinWidth="120" Content="{loc:Tr Settings_ColumnTaskbar}"
+                             IsChecked="{Binding SelectedSurface, Converter={StaticResource EnumEquals}, ConverterParameter=Taskbar}" />
+            </views:SegmentedPanel>
+        </Border>
+        <Grid>
+            <ContentControl x:Name="WindowContent" Content="{Binding WindowOptions}"
+                            ContentTemplate="{StaticResource SurfaceOptionsTemplate}" Focusable="False" />
+            <ContentControl x:Name="TaskbarContent" Content="{Binding TaskbarOptions}" Visibility="Collapsed"
+                            ContentTemplate="{StaticResource SurfaceOptionsTemplate}" Focusable="False" />
+        </Grid>
+
+        <!-- How the times and the tray icon are shown, wherever they are. -->
+        <TextBlock Text="{loc:Tr Settings_SectionFormat}" Style="{StaticResource GroupHeaderStyle}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel>
+                <views:SettingRow Title="{loc:Tr Settings_ResetTime}" Description="{loc:Tr Settings_ResetTimeDescription}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.ResetTimeDisplayOptions}" SelectedValue="{Binding ResetTimeDisplay}" />
+                </views:SettingRow>
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr Settings_TrayIcon}" Description="{loc:Tr Settings_TrayIconDescription}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.TrayIconStyleOptions}" SelectedValue="{Binding TrayIconStyle}" />
+                </views:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated from one en/ja table; edit both Strings.resx and Strings.ja.resx together. -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Flyout_Close" xml:space="preserve"><value>閉じる</value></data>
+  <data name="Flyout_Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Flyout_RefreshNow" xml:space="preserve"><value>今すぐ更新</value></data>
+  <data name="Flyout_NeverRefreshed" xml:space="preserve"><value>未取得</value></data>
+  <data name="Flyout_UpdatedJustNow" xml:space="preserve"><value>たった今更新</value></data>
+  <data name="Flyout_UpdatedMinutesAgo" xml:space="preserve"><value>{0} 分前に更新</value></data>
+  <data name="Flyout_UpdatedHoursAgo" xml:space="preserve"><value>{0} 時間前に更新</value></data>
+  <data name="Flyout_UpdatedDaysAgo" xml:space="preserve"><value>{0} 日前に更新</value></data>
+  <data name="Flyout_LastUpdatedAt" xml:space="preserve"><value>最終更新: {0}</value></data>
+  <data name="Usage_Session" xml:space="preserve"><value>セッション (5 時間)</value></data>
+  <data name="Usage_Weekly" xml:space="preserve"><value>週間 (7 日)</value></data>
+  <data name="Usage_SessionShort" xml:space="preserve"><value>5h</value></data>
+  <data name="Usage_WeeklyShort" xml:space="preserve"><value>7d</value></data>
+  <data name="Usage_ResetsSoon" xml:space="preserve"><value>まもなくリセット</value></data>
+  <data name="Usage_ResetsInDaysHours" xml:space="preserve"><value>{0} 日 {1} 時間後にリセット</value></data>
+  <data name="Usage_ResetsInHoursMinutes" xml:space="preserve"><value>{0} 時間 {1} 分後にリセット</value></data>
+  <data name="Error_MessagesApiFailed" xml:space="preserve"><value>使用量を取得できませんでした。</value></data>
+  <data name="Error_SignInRejected" xml:space="preserve"><value>Anthropic がサインインを受け付けませんでした。</value></data>
+  <data name="Error_SignInInDesktop" xml:space="preserve"><value>{0} Claude デスクトップアプリでサインインし直してください。</value></data>
+  <data name="Error_Status" xml:space="preserve"><value>使用量を取得できませんでした (ステータス {0})。</value></data>
+  <data name="Error_Network" xml:space="preserve"><value>Anthropic の API に接続できませんでした。ネットワーク接続を確認してください。</value></data>
+  <data name="Error_SignInExpired" xml:space="preserve"><value>Claude Code のサインインの有効期限が切れています。次に Claude Code を使うと自動で更新されます。</value></data>
+  <data name="Error_NotSignedIn" xml:space="preserve"><value>Claude デスクトップアプリにサインインすると、使用量を表示できます。</value></data>
+  <data name="Error_DesktopSignInExpired" xml:space="preserve"><value>Claude デスクトップアプリのサインインの有効期限が切れています。次にデスクトップアプリを使うと自動で更新されます。</value></data>
+  <data name="Error_SignInInWsl" xml:space="preserve"><value>{0} サインインし直すには、{1} で "claude auth login" を実行してください。</value></data>
+  <data name="Error_RateLimited" xml:space="preserve"><value>使用量の確認回数が制限されています。{0} 分後の次の更新で再試行します。</value></data>
+  <data name="Error_Unexpected" xml:space="preserve"><value>予期しないエラー: {0}</value></data>
+  <data name="Toast_SessionResetTitle" xml:space="preserve"><value>セッション枠のリセット</value></data>
+  <data name="Toast_SessionResetBody" xml:space="preserve"><value>5 時間のセッション枠がリセットされました。</value></data>
+  <data name="Toast_UsageAlertTitle" xml:space="preserve"><value>Claude 使用量のお知らせ</value></data>
+  <data name="Toast_UsageAlertBody" xml:space="preserve"><value>セッション枠の使用率が {0}% に達しました。</value></data>
+  <data name="Tray_Refresh" xml:space="preserve"><value>今すぐ更新</value></data>
+  <data name="Tray_Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Tray_ResetPosition" xml:space="preserve"><value>表示位置をリセット</value></data>
+  <data name="Tray_FlyoutCompact" xml:space="preserve"><value>ウィンドウをコンパクト表示</value></data>
+  <data name="Settings_FlyoutCompact" xml:space="preserve"><value>コンパクト表示</value></data>
+  <data name="Settings_FlyoutCompactDescription" xml:space="preserve"><value>フライアウトを、タスクバーのバーと同じくらいの大きさ(項目ごとに 1 行)にします。フライアウトをダブルクリックしても切り替えられます。</value></data>
+  <data name="Tray_FlyoutClickThrough" xml:space="preserve"><value>ウィンドウのクリックを透過</value></data>
+  <data name="Tray_TaskbarBarClickThrough" xml:space="preserve"><value>タスクバーのバーのクリックを透過</value></data>
+  <data name="Settings_FlyoutClickThrough" xml:space="preserve"><value>クリックを透過</value></data>
+  <data name="Settings_FlyoutClickThroughDescription" xml:space="preserve"><value>フライアウト上のマウス操作を、後ろのウィンドウにそのまま通します。Ctrl を押している間だけ、フライアウトを操作できます。</value></data>
+  <data name="Settings_TaskbarBarClickThrough" xml:space="preserve"><value>クリックを透過</value></data>
+  <data name="Settings_TaskbarBarClickThroughDescription" xml:space="preserve"><value>バー上のマウス操作を、下のタスクバーや全画面のアプリにそのまま通します。Ctrl を押している間だけ、クリックやドラッグができます。</value></data>
+  <data name="Usage_ResetsAtTime" xml:space="preserve"><value>{0:H:mm} にリセット</value></data>
+  <data name="Usage_ResetsAtDayTime" xml:space="preserve"><value>{0:M/d} ({0:ddd}) {0:H:mm} にリセット</value></data>
+  <data name="Usage_ShortAtTime" xml:space="preserve"><value>{0:H:mm}</value></data>
+  <data name="Usage_ShortAtDayTime" xml:space="preserve"><value>{0:ddd} {0:H:mm}</value></data>
+  <data name="Toast_WeeklyResetTitle" xml:space="preserve"><value>週間枠のリセット</value></data>
+  <data name="Toast_WeeklyResetBody" xml:space="preserve"><value>7 日間の週間枠がリセットされました。</value></data>
+  <data name="Toast_WeeklyAlertBody" xml:space="preserve"><value>週間枠の使用率が {0}% に達しました。</value></data>
+  <data name="Settings_WeeklyNotifications" xml:space="preserve"><value>週間枠の通知</value></data>
+  <data name="Settings_WeeklyNotificationsDescription" xml:space="preserve"><value>週間の使用率が同じ値に達したときと、週間枠のリセット時にも通知します。</value></data>
+  <data name="Settings_ResetTime" xml:space="preserve"><value>リセットの表示</value></data>
+  <data name="Settings_ResetTimeDescription" xml:space="preserve"><value>リセットを、それまでの残り時間で表示するか、リセットされる時刻で表示するかを選びます。</value></data>
+  <data name="Settings_ResetTimeRemaining" xml:space="preserve"><value>残り時間</value></data>
+  <data name="Settings_ResetTimeClock" xml:space="preserve"><value>時刻</value></data>
+  <data name="Settings_TrayIcon" xml:space="preserve"><value>トレイアイコン</value></data>
+  <data name="Settings_TrayIconDescription" xml:space="preserve"><value>トレイアイコンの表示方法を選びます。二重リングは、外側がセッション、内側が週間です。</value></data>
+  <data name="Settings_TrayIconRing" xml:space="preserve"><value>リング</value></data>
+  <data name="Settings_TrayIconDoubleRing" xml:space="preserve"><value>二重リング</value></data>
+  <data name="Settings_TrayIconNumber" xml:space="preserve"><value>数字</value></data>
+  <data name="Settings_TrayIconCreature" xml:space="preserve"><value>数字 (キャラクター)</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>終了</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>設定 - Usagi</value></data>
+  <data name="Settings_NavBasics" xml:space="preserve"><value>基本</value></data>
+  <data name="Settings_NavDisplay" xml:space="preserve"><value>表示</value></data>
+  <data name="Settings_NavOther" xml:space="preserve"><value>その他</value></data>
+  <data name="Settings_Account" xml:space="preserve"><value>アカウント</value></data>
+  <data name="Settings_TestConnection" xml:space="preserve"><value>接続テスト</value></data>
+  <data name="Settings_TestConnectionToolTip" xml:space="preserve"><value>定期更新と同じ方法で、使用量を取得できるか確認します (「使用量を消費しない」がオフなら、約 10 トークンを消費します)。</value></data>
+  <data name="Settings_InstallLink" xml:space="preserve"><value>Claude Code のインストール方法</value></data>
+  <data name="Settings_RefreshInterval" xml:space="preserve"><value>更新間隔</value></data>
+  <data name="Settings_Decrease" xml:space="preserve"><value>5 秒減らす</value></data>
+  <data name="Settings_Increase" xml:space="preserve"><value>5 秒増やす</value></data>
+  <data name="Settings_IntervalToolTip" xml:space="preserve"><value>{0}〜{1} 秒</value></data>
+  <data name="Settings_Seconds" xml:space="preserve"><value>秒</value></data>
+  <data name="Settings_AvoidTokens" xml:space="preserve"><value>使用量を消費しない</value></data>
+  <data name="Settings_AvoidTokensDescription" xml:space="preserve"><value>更新は 5 分ごとになります。</value></data>
+  <data name="Settings_Display" xml:space="preserve"><value>表示内容</value></data>
+  <data name="Settings_SectionLook" xml:space="preserve"><value>見た目</value></data>
+  <data name="Settings_SectionUsage" xml:space="preserve"><value>使用量の取得</value></data>
+  <data name="Settings_AccountRow" xml:space="preserve"><value>Claude Code のアカウント</value></data>
+  <data name="Settings_TestConnectionDescription" xml:space="preserve"><value>定期更新と同じ方法で、使用量を取得できるか確認します。</value></data>
+  <data name="Settings_TestButton" xml:space="preserve"><value>確認</value></data>
+  <data name="Settings_ThemeDescription" xml:space="preserve"><value>アプリの配色を選びます。</value></data>
+  <data name="Settings_LanguageDescription" xml:space="preserve"><value>表示する言語を選びます。</value></data>
+  <data name="Settings_NotificationsDescription" xml:space="preserve"><value>セッションの使用率が下で指定した値に達したときと、セッション枠のリセット時に通知します。</value></data>
+  <data name="Settings_LaunchAtLoginDescription" xml:space="preserve"><value>Windows にサインインしたときに、自動で起動します。</value></data>
+  <data name="Settings_ShowOnStartupDescription" xml:space="preserve"><value>起動したときに、ウィンドウを開きます。オフにすると、タスクバーのバーとトレイアイコンだけで起動します。</value></data>
+  <data name="Settings_AlwaysOnTopDescription" xml:space="preserve"><value>フライアウトを、ほかのウィンドウより手前に表示します。</value></data>
+  <data name="Settings_SectionGeneral" xml:space="preserve"><value>全般</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>テーマ</value></data>
+  <data name="Settings_ThemeSystem" xml:space="preserve"><value>システム</value></data>
+  <data name="Settings_ThemeLight" xml:space="preserve"><value>ライト</value></data>
+  <data name="Settings_ThemeDark" xml:space="preserve"><value>ダーク</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>言語</value></data>
+  <data name="Settings_LanguageSystem" xml:space="preserve"><value>システム</value></data>
+  <data name="Settings_Notifications" xml:space="preserve"><value>使用率の通知</value></data>
+  <data name="Settings_LaunchAtLogin" xml:space="preserve"><value>Windows へのサインイン時に起動</value></data>
+  <data name="Settings_ShowOnStartup" xml:space="preserve"><value>起動時にウィンドウを開く</value></data>
+  <data name="Settings_TaskbarBarOnlyOnStartup" xml:space="preserve"><value>起動時はタスクバーのバーだけにする</value></data>
+  <data name="Settings_TaskbarBarOnlyOnStartupDescription" xml:space="preserve"><value>起動したときにウィンドウを開かず、タスクバーのバーとトレイアイコンだけを表示します。「ウィンドウ」の「起動時にウィンドウを開く」と同じ設定です。</value></data>
+  <data name="Settings_AlwaysOnTop" xml:space="preserve"><value>常に最前面に表示</value></data>
+  <data name="Settings_TaskbarBar" xml:space="preserve"><value>タスクバーにバーを表示</value></data>
+  <data name="Settings_TaskbarBarDescription" xml:space="preserve"><value>通知領域の左に、使用率のバーを常に表示します。クリックするとフライアウトを開き、左右にドラッグすると位置を変えられます。</value></data>
+  <data name="Settings_TaskbarBarDisplay" xml:space="preserve"><value>ディスプレイ {0}</value></data>
+  <data name="Settings_TaskbarBarDisplayMain" xml:space="preserve"><value>ディスプレイ {0} (メイン)</value></data>
+  <data name="Settings_TaskbarBarDisplayDescription" xml:space="preserve"><value>{0} × {1}、{2}。スライダーでも、タスクバー上でのドラッグでも位置を変えられます。</value></data>
+  <data name="Settings_TaskbarBarOffsetToolTip" xml:space="preserve"><value>自動で決まる位置から、左(マイナス)または右(プラス)にずらします</value></data>
+  <data name="Settings_DisplayPositionLeft" xml:space="preserve"><value>左端</value></data>
+  <data name="Settings_DisplayPositionRight" xml:space="preserve"><value>右端</value></data>
+  <data name="Settings_DisplayPositionMiddle" xml:space="preserve"><value>左から {0} 番目</value></data>
+  <data name="Settings_DisplayPositionOnly" xml:space="preserve"><value>唯一のディスプレイ</value></data>
+  <data name="Settings_TaskbarBarOverFullScreen" xml:space="preserve"><value>全画面表示のアプリの上にも表示</value></data>
+  <data name="Settings_TaskbarBarOverFullScreenDescription" xml:space="preserve"><value>全画面のゲームや動画がタスクバーを覆っている間も、暗い背景を付けてバーを表示します。</value></data>
+  <data name="Settings_TaskbarBarOffsetReset" xml:space="preserve"><value>0px(自動の位置)に戻す</value></data>
+  <data name="Settings_ResetTo100" xml:space="preserve"><value>100% に戻す</value></data>
+  <data name="Usage_ShortDaysHours" xml:space="preserve"><value>{0}d {1}h</value></data>
+  <data name="Usage_ShortHoursMinutes" xml:space="preserve"><value>{0}h {1}m</value></data>
+  <data name="Usage_ShortMinutes" xml:space="preserve"><value>{0}m</value></data>
+  <data name="Settings_Thresholds" xml:space="preserve"><value>通知する使用率</value></data>
+  <data name="Settings_ThresholdsDescription" xml:space="preserve"><value>使用率がこの値に達したときに通知します。{0} 個まで追加できます。</value></data>
+  <data name="Settings_ThresholdsReset" xml:space="preserve"><value>既定 ({0}) に戻す</value></data>
+  <data name="Settings_ListSeparator" xml:space="preserve"><value>、</value></data>
+  <data name="Settings_ThresholdAdd" xml:space="preserve"><value>追加</value></data>
+  <data name="Settings_ThresholdRemove" xml:space="preserve"><value>削除</value></data>
+  <data name="Settings_ThresholdNew" xml:space="preserve"><value>追加する使用率 (1〜100)</value></data>
+  <data name="Settings_SectionWindow" xml:space="preserve"><value>ウィンドウ</value></data>
+  <data name="Settings_SectionTaskbarBar" xml:space="preserve"><value>タスクバーのバー</value></data>
+  <data name="Settings_SectionNotifications" xml:space="preserve"><value>通知</value></data>
+  <data name="Settings_Mascot" xml:space="preserve"><value>キャラクター</value></data>
+  <data name="Settings_MascotAnimation" xml:space="preserve"><value>キャラクターの動き</value></data>
+  <data name="Settings_MascotAnimationDescription" xml:space="preserve"><value>「控えめ」は、表情が変わったときと 1 分ごとに少しだけ動きます。「よく動く」は、ずっと動き続けます。</value></data>
+  <data name="Settings_MascotAnimationOff" xml:space="preserve"><value>動かさない</value></data>
+  <data name="Settings_MascotAnimationSubtle" xml:space="preserve"><value>控えめ</value></data>
+  <data name="Settings_MascotAnimationLively" xml:space="preserve"><value>よく動く</value></data>
+  <data name="Settings_MascotBunnyEars" xml:space="preserve"><value>うさ耳</value></data>
+  <data name="Settings_SectionMascotMotion" xml:space="preserve"><value>動き</value></data>
+  <data name="Settings_MascotWakesOnReset" xml:space="preserve"><value>リセットで起きる</value></data>
+  <data name="Settings_MascotWakesOnResetDescription" xml:space="preserve"><value>使い切って眠っているときにリセットされると、伸びをしてから起きます。</value></data>
+  <data name="Settings_MascotStartlesOnJump" xml:space="preserve"><value>急に増えたら驚く</value></data>
+  <data name="Settings_MascotStartlesOnJumpDescription" xml:space="preserve"><value>セッションの使用率が前回の取得から 10 ポイント以上増えていると、一瞬びくっとします。</value></data>
+  <data name="Settings_MascotHoldsSign" xml:space="preserve"><value>通知の使用率で看板を掲げる</value></data>
+  <data name="Settings_MascotHoldsSignDescription" xml:space="preserve"><value>セッションの使用率が通知する使用率 (75% など) を超えると、その数字の看板を頭の上に掲げます。</value></data>
+  <data name="Settings_MascotFollowsCursor" xml:space="preserve"><value>カーソルを目で追う</value></data>
+  <data name="Settings_MascotFollowsCursorDescription" xml:space="preserve"><value>カーソルが近くにあると、目がそちらを向きます。困っているときや眠っているときは追いません。</value></data>
+  <data name="Settings_MascotBodyGauge" xml:space="preserve"><value>体で残りを表す</value></data>
+  <data name="Settings_MascotBodyGaugeDescription" xml:space="preserve"><value>セッションを使った分だけ、キャラクターが上から薄くなります。薄くなり方を選べます。</value></data>
+  <data name="Settings_MascotBodyGaugeNone" xml:space="preserve"><value>しない</value></data>
+  <data name="Settings_MascotBodyGaugePale" xml:space="preserve"><value>薄い色</value></data>
+  <data name="Settings_MascotBodyGaugeShadow" xml:space="preserve"><value>影</value></data>
+  <data name="Settings_MascotBodyGaugeDots" xml:space="preserve"><value>点々</value></data>
+  <data name="Settings_MascotMoodSource" xml:space="preserve"><value>表情に使う使用率</value></data>
+  <data name="Settings_MascotMoodSourceDescription" xml:space="preserve"><value>キャラクターの表情を、どの使用率で決めるかを選びます。</value></data>
+  <data name="Settings_MascotMoodSourceHigher" xml:space="preserve"><value>高いほう</value></data>
+  <data name="Settings_MascotMoodSourceSession" xml:space="preserve"><value>セッション</value></data>
+  <data name="Settings_MascotMoodSourceWeekly" xml:space="preserve"><value>週間</value></data>
+  <data name="Settings_MascotIdleActs" xml:space="preserve"><value>気まぐれな行動</value></data>
+  <data name="Settings_MascotIdleActsDescription" xml:space="preserve"><value>使用率に余裕があるとき、数分に 1 回、のびをしたり、本を読んだり、なわとびをしたりします。朝・昼・夜には、その時間らしいこともします。</value></data>
+  <data name="Settings_MascotCarrot" xml:space="preserve"><value>にんじん</value></data>
+  <data name="Settings_MascotCarrotDescription" xml:space="preserve"><value>キャラクターの横ににんじんを置きます。セッションの使用率が上がるほどかじられて短くなり、残りがセッションの残りを表します。</value></data>
+  <data name="Settings_MascotBunnyEarsDescription" xml:space="preserve"><value>キャラクターにうさ耳のカチューシャを付けます。使用率が上がるほど、耳がずれていきます。</value></data>
+  <data name="Settings_Scale" xml:space="preserve"><value>拡大率</value></data>
+  <data name="Settings_ScaleDescription" xml:space="preserve"><value>フライアウト全体の大きさを変えます。フライアウトの端をドラッグしても変更できます。</value></data>
+  <data name="Settings_Opacity" xml:space="preserve"><value>不透明度</value></data>
+  <data name="Settings_OpacityDescription" xml:space="preserve"><value>値を下げるほど、フライアウトの後ろが透けて見えます。</value></data>
+  <data name="Settings_IntervalEnter" xml:space="preserve"><value>{0}〜{1} 秒で入力してください</value></data>
+  <data name="Settings_IntervalMin" xml:space="preserve"><value>最小は {0} 秒です</value></data>
+  <data name="Settings_IntervalMax" xml:space="preserve"><value>最大は {0} 秒です</value></data>
+  <data name="Settings_IntervalTokensPerRefresh" xml:space="preserve"><value>更新 1 回につき約 {0} トークンを消費します。</value></data>
+  <data name="Settings_TokensPerHour" xml:space="preserve"><value>約 {0} トークン/時</value></data>
+  <data name="Settings_ProbeModel" xml:space="preserve"><value>使用モデル: {0} (自動選択)</value></data>
+  <data name="Flyout_RefreshAvailableIn" xml:space="preserve"><value>あと {0} 分で更新できます</value></data>
+  <data name="Settings_TestAvailableIn" xml:space="preserve"><value>直前に確認したばかりです。あと {0} 分で確認できます。</value></data>
+  <data name="Settings_CheckingSignIn" xml:space="preserve"><value>Claude Code のサインインを確認しています...</value></data>
+  <data name="Settings_UsingWsl" xml:space="preserve"><value>{0} の Claude Code のサインインを使用しています。</value></data>
+  <data name="Settings_WslExpired" xml:space="preserve"><value>{0} の Claude Code のサインインの有効期限が切れています。次に {0} で Claude Code を使うと自動で更新されます。</value></data>
+  <data name="Settings_Expired" xml:space="preserve"><value>サインインの有効期限が切れています。次に Claude Code を使うと自動で更新されます。</value></data>
+  <data name="Settings_UsingDesktop" xml:space="preserve"><value>Claude デスクトップアプリのサインインを使用しています。</value></data>
+  <data name="Settings_DesktopExpired" xml:space="preserve"><value>Claude デスクトップアプリのサインインの有効期限が切れています。次にデスクトップアプリを使うと自動で更新されます。</value></data>
+  <data name="Settings_NotSignedIn" xml:space="preserve"><value>Claude デスクトップアプリにも Claude Code にもサインインしていません。</value></data>
+  <data name="Settings_SignedInAsWithPlan" xml:space="preserve"><value>{0} ({1}) でサインイン中</value></data>
+  <data name="Settings_SignedInAs" xml:space="preserve"><value>{0} でサインイン中</value></data>
+  <data name="Settings_SignedIn" xml:space="preserve"><value>サインイン済みです。</value></data>
+  <data name="Settings_Testing" xml:space="preserve"><value>接続をテストしています...</value></data>
+  <data name="Settings_Connected" xml:space="preserve"><value>接続できました。セッション: {0:0.#}%、週間: {1:0.#}%</value></data>
+  <data name="Settings_ConnectedRateLimited" xml:space="preserve"><value>サインインは有効ですが、使用量の確認回数が制限されています。時間をおいて試すか、「使用量を消費しない」をオフにしてください。</value></data>
+  <data name="Settings_About" xml:space="preserve"><value>バージョン情報</value></data>
+  <data name="About_Version" xml:space="preserve"><value>バージョン {0}</value></data>
+  <data name="About_SectionUpdates" xml:space="preserve"><value>アップデート</value></data>
+  <data name="About_NotChecked" xml:space="preserve"><value>アップデートを確認できます</value></data>
+  <data name="About_NotCheckedDetail" xml:space="preserve"><value>GitHub で新しいバージョンが公開されているか確認します。</value></data>
+  <data name="About_Checking" xml:space="preserve"><value>アップデートを確認しています...</value></data>
+  <data name="About_CheckingDetail" xml:space="preserve"><value>GitHub で最新のリリースを確認しています。</value></data>
+  <data name="About_UpToDate" xml:space="preserve"><value>最新の状態です</value></data>
+  <data name="About_LastCheckedToday" xml:space="preserve"><value>前回の確認: 今日 {0}</value></data>
+  <data name="About_LastChecked" xml:space="preserve"><value>前回の確認: {0}</value></data>
+  <data name="About_UpdateAvailable" xml:space="preserve"><value>バージョン {0} が利用できます</value></data>
+  <data name="About_UpdateAvailableDetail" xml:space="preserve"><value>現在のバージョンは {0} です。リリースページからダウンロードできます。</value></data>
+  <data name="About_CheckFailed" xml:space="preserve"><value>アップデートを確認できませんでした</value></data>
+  <data name="About_CheckFailedDetail" xml:space="preserve"><value>GitHub に接続できませんでした。接続を確認して、もう一度お試しください。</value></data>
+  <data name="About_CheckForUpdates" xml:space="preserve"><value>最新版を確認</value></data>
+  <data name="About_Download" xml:space="preserve"><value>ダウンロード</value></data>
+  <data name="About_DownloadToolTip" xml:space="preserve"><value>リリースのダウンロードページをブラウザで開きます</value></data>
+  <data name="About_SectionLinks" xml:space="preserve"><value>リンク</value></data>
+  <data name="About_ReleaseNotes" xml:space="preserve"><value>リリースノート</value></data>
+  <data name="About_ReleaseNotesDescription" xml:space="preserve"><value>各バージョンの変更内容</value></data>
+  <data name="About_Repository" xml:space="preserve"><value>GitHub</value></data>
+  <data name="About_RepositoryDescription" xml:space="preserve"><value>ソースコードと不具合の報告</value></data>
+  <data name="About_OpenInBrowser" xml:space="preserve"><value>ブラウザで開く</value></data>
+  <data name="Settings_ItemsDescription" xml:space="preserve"><value>ウィンドウとタスクバーのバーに、それぞれ何をどの順で表示するかを選びます。</value></data>
+  <data name="Settings_PreviewHint" xml:space="preserve"><value>クリックで表示と非表示、ドラッグで並び替えができます。</value></data>
+  <data name="Settings_PartOrder" xml:space="preserve"><value>並び順 (上ほど左)</value></data>
+  <data name="Settings_PartBar" xml:space="preserve"><value>バー</value></data>
+  <data name="Settings_PartPercentage" xml:space="preserve"><value>使用率の数字</value></data>
+  <data name="Settings_PartMascotDescription" xml:space="preserve"><value>表情で残りを表します</value></data>
+  <data name="Settings_PartBarDescription" xml:space="preserve"><value>長さと色で使用率を表します</value></data>
+  <data name="Settings_PartPercentageDescription" xml:space="preserve"><value>42% のような数字で表します</value></data>
+  <data name="Settings_PartLocked" xml:space="preserve"><value>ほかに使用率を表すものがないので、隠せません</value></data>
+  <data name="Settings_PartLockedMessage" xml:space="preserve"><value>キャラクター・バー・数字のどれか 1 つは表示します。ほかを表示してから隠してください。</value></data>
+  <data name="Settings_PartShow" xml:space="preserve"><value>表示する</value></data>
+  <data name="Settings_PartHide" xml:space="preserve"><value>隠す</value></data>
+  <data name="Settings_WindowCompactNote" xml:space="preserve"><value>コンパクト表示のときの見た目です。通常表示では、行の中身を常にすべて表示します。</value></data>
+  <data name="Settings_Rows" xml:space="preserve"><value>表示する枠</value></data>
+  <data name="Settings_RowsDescription" xml:space="preserve"><value>セッション (5 時間) と週間 (7 日) の使用率</value></data>
+  <data name="Settings_RowsBoth" xml:space="preserve"><value>両方</value></data>
+  <data name="Settings_RowsSession" xml:space="preserve"><value>5 時間</value></data>
+  <data name="Settings_RowsWeekly" xml:space="preserve"><value>7 日</value></data>
+  <data name="Settings_ItemLabelsDescription" xml:space="preserve"><value>各行の先頭に、どの枠かを表示します</value></data>
+  <data name="Settings_ItemResetTimeDescription" xml:space="preserve"><value>各行の末尾に、リセットまでの残り時間 (または時刻) を表示します</value></data>
+  <data name="Settings_TaskbarBarOffTitle" xml:space="preserve"><value>タスクバーのバーはオフです</value></data>
+  <data name="Settings_TaskbarBarOffDescription" xml:space="preserve"><value>オンにすると、タスクバーに表示する内容を選べます。</value></data>
+  <data name="Settings_TurnOn" xml:space="preserve"><value>オンにする</value></data>
+  <data name="Settings_ColumnWindow" xml:space="preserve"><value>ウィンドウ</value></data>
+  <data name="Settings_ColumnTaskbar" xml:space="preserve"><value>タスクバー</value></data>
+  <data name="Settings_ItemLabels" xml:space="preserve"><value>項目名 (5h / 7d)</value></data>
+  <data name="Settings_ItemResetTime" xml:space="preserve"><value>リセットまでの時間</value></data>
+  <data name="Settings_SectionFormat" xml:space="preserve"><value>表示形式</value></data>
+  <data name="Settings_MascotWhereHint" xml:space="preserve"><value>表示する場所は「表示内容」で選びます。</value></data>
+</root>
