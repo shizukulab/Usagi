@@ -135,7 +135,7 @@ public partial class FlyoutViewModel : ObservableObject
 
     partial void OnMascotMoodSourceChanged(MascotMoodSource value) => RefreshTimes();
 
-    // The window the setting picks (by default, whichever is fuller) sets the mood, at the bars' own
+    // The window the setting picks (by default, the session) sets the mood, at the bars' own
     // color steps (70% and 90%); it's only happy while the session (or the week, if that alone is
     // followed) is as good as untouched.
     private static MascotMood MoodFor(MascotMoodSource source, double sessionPercentage, double weeklyPercentage)

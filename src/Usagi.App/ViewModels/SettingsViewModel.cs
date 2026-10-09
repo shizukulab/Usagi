@@ -120,9 +120,9 @@ public partial class SettingsViewModel : ObservableObject
 
     public static IReadOnlyList<ChoiceOption> MascotMoodSourceOptions { get; } =
     [
-        new(MascotMoodSource.Higher, "Settings_MascotMoodSourceHigher"),
         new(MascotMoodSource.Session, "Settings_MascotMoodSourceSession"),
         new(MascotMoodSource.Weekly, "Settings_MascotMoodSourceWeekly"),
+        new(MascotMoodSource.Higher, "Settings_MascotMoodSourceHigher"),
     ];
 
     /// <summary>

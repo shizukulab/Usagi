@@ -184,7 +184,7 @@ public sealed class AppSettings : IJsonOnDeserialized
 
     /// <summary>Which usage window the creature's mood follows, wherever it's shown.</summary>
     [JsonConverter(typeof(JsonStringEnumConverter<MascotMoodSource>))]
-    public MascotMoodSource MascotMoodSource { get; set; } = MascotMoodSource.Higher;
+    public MascotMoodSource MascotMoodSource { get; set; } = MascotMoodSource.Session;
 
     // Things the creature does on its own account, each only while it's animated at all.
 
@@ -345,14 +345,14 @@ public enum MascotBodyGauge
 /// <summary>Which usage window sets the creature's mood.</summary>
 public enum MascotMoodSource
 {
-    /// <summary>Whichever of the two is fuller.</summary>
-    Higher,
-
     /// <summary>The session alone.</summary>
     Session,
 
     /// <summary>The week alone.</summary>
-    Weekly
+    Weekly,
+
+    /// <summary>Whichever of the two is fuller.</summary>
+    Higher
 }
 
 /// <summary>Whether one monitor's taskbar gets the usage bars, and where on it.</summary>
