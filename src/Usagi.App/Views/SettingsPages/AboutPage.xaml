@@ -1,0 +1,142 @@
+<UserControl x:Class="Usagi.App.Views.SettingsPages.AboutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Usagi.App.Localization"
+             xmlns:views="clr-namespace:Usagi.App.Views">
+    <!-- The About page of the settings window: the app and its version, the update card (in the
+         manner of Windows 11's Windows Update page: a status badge, what it means, and the action
+         on the right) and links to the project. Checking only ever happens on the button. -->
+    <UserControl.Resources>
+        <!-- The badge's glyph; its color is also the badge's tint (the circle binds to it). -->
+        <Style x:Key="UpdateGlyphStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource IconFontFamily}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="0" />
+                </Setter.Value>
+            </Setter>
+            <!-- Sync: not checked yet. -->
+            <Setter Property="Text" Value="&#xE895;" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding UpdateStatus}" Value="Checking">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard x:Name="SpinStoryboard">
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle" From="0" To="360"
+                                                 Duration="0:0:1" RepeatBehavior="Forever" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="SpinStoryboard" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding UpdateStatus}" Value="UpToDate">
+                    <Setter Property="Text" Value="&#xE73E;" />
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding UpdateStatus}" Value="UpdateAvailable">
+                    <Setter Property="Text" Value="&#xE896;" />
+                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding UpdateStatus}" Value="Failed">
+                    <Setter Property="Text" Value="&#xE7BA;" />
+                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- A link row's button: shows a background only on hover. Its "open in a new window" glyph is a
+             TextBlock with the icon font, as the implicit TextBlock style would otherwise set the UI font. -->
+        <Style x:Key="ExternalLinkButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <TextBlock Text="{loc:Tr Settings_About}" Style="{StaticResource SectionHeaderStyle}" />
+
+        <!-- The app: icon, name and version. -->
+        <Border Style="{StaticResource SettingsCardStyle}" Padding="20,18">
+            <DockPanel>
+                <!-- Pixel art: its 48px frame (see the code-behind), unsmoothed, so the blocks stay sharp. -->
+                <Image x:Name="AppIconImage" DockPanel.Dock="Left" Width="48" Height="48" Margin="0,0,16,0"
+                       RenderOptions.BitmapScalingMode="NearestNeighbor" UseLayoutRounding="True" VerticalAlignment="Center" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Usagi" Style="{StaticResource BodyStrongTextStyle}" FontSize="17"
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                    <TextBlock Text="{Binding AppVersionText}" Style="{StaticResource RowDescriptionStyle}" Margin="0,2,0,0" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <TextBlock Text="{loc:Tr About_SectionUpdates}" Style="{StaticResource GroupHeaderStyle}" />
+
+        <!-- The update card: badge, status and detail, then Download (only when there is one) and Check. -->
+        <Border Style="{StaticResource SettingsCardStyle}" Padding="20,18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Width="44" Height="44" Margin="0,0,16,0" VerticalAlignment="Center">
+                    <Ellipse Fill="{Binding Foreground, ElementName=UpdateGlyph}" Opacity="0.13" />
+                    <TextBlock x:Name="UpdateGlyph" Style="{StaticResource UpdateGlyphStyle}" />
+                </Grid>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding UpdateTitle}" Style="{StaticResource BodyStrongTextStyle}" FontSize="15"
+                               Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding UpdateDetail}" Style="{StaticResource RowDescriptionStyle}" Margin="0,3,0,0"
+                               Visibility="{Binding UpdateDetail, Converter={StaticResource StringToVisibility}}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button Style="{StaticResource AccentButtonStyle}" Height="32" Padding="16,0" Margin="0,0,8,0"
+                            Command="{Binding DownloadUpdateCommand}"
+                            ToolTip="{loc:Tr About_DownloadToolTip}"
+                            Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE896;" FontFamily="{StaticResource IconFontFamily}" FontSize="13"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Text="{loc:Tr About_Download}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Height="32" Padding="16,0" Command="{Binding CheckForUpdatesCommand}">
+                        <TextBlock Text="{loc:Tr About_CheckForUpdates}" VerticalAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TextBlock Text="{loc:Tr About_SectionLinks}" Style="{StaticResource GroupHeaderStyle}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel>
+                <views:SettingRow Title="{loc:Tr About_ReleaseNotes}" Description="{loc:Tr About_ReleaseNotesDescription}">
+                    <Button Style="{StaticResource ExternalLinkButtonStyle}" Command="{Binding OpenReleaseNotesCommand}"
+                            ToolTip="{loc:Tr About_OpenInBrowser}" AutomationProperties.Name="{loc:Tr About_ReleaseNotes}">
+                        <TextBlock Text="&#xE8A7;" FontFamily="{StaticResource IconFontFamily}" />
+                    </Button>
+                </views:SettingRow>
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr About_Repository}" Description="{loc:Tr About_RepositoryDescription}">
+                    <Button Style="{StaticResource ExternalLinkButtonStyle}" Command="{Binding OpenRepositoryCommand}"
+                            ToolTip="{loc:Tr About_OpenInBrowser}" AutomationProperties.Name="{loc:Tr About_Repository}">
+                        <TextBlock Text="&#xE8A7;" FontFamily="{StaticResource IconFontFamily}" />
+                    </Button>
+                </views:SettingRow>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

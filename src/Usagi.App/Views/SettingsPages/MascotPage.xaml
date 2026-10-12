@@ -1,0 +1,60 @@
+<UserControl x:Class="Usagi.App.Views.SettingsPages.MascotPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Usagi.App.Localization"
+             xmlns:vm="clr-namespace:Usagi.App.ViewModels"
+             xmlns:views="clr-namespace:Usagi.App.Views">
+    <!-- The Creature page of the settings window, in two groups: how the creature looks, and how it
+         moves, wherever it's shown. Where it's shown is picked on the Display page, with the rest of
+         what each place shows. -->
+    <StackPanel>
+        <TextBlock Text="{loc:Tr Settings_Mascot}" Style="{StaticResource SectionHeaderStyle}" />
+        <TextBlock Text="{loc:Tr Settings_MascotWhereHint}" Style="{StaticResource RowDescriptionStyle}" Margin="4,-6,0,12" />
+        <!-- How it looks, in both places. Only while it's shown in either. -->
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel>
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotBunnyEars}" IsEnabled="{Binding CanAnimateMascot}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotBunnyEars}" views:SettingRow.Description="{loc:Tr Settings_MascotBunnyEarsDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotCarrot}" IsEnabled="{Binding CanAnimateMascot}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotCarrot}" views:SettingRow.Description="{loc:Tr Settings_MascotCarrotDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr Settings_MascotBodyGauge}" Description="{loc:Tr Settings_MascotBodyGaugeDescription}" IsEnabled="{Binding CanAnimateMascot}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.MascotBodyGaugeOptions}" SelectedValue="{Binding MascotBodyGauge}" />
+                </views:SettingRow>
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <views:SettingRow Title="{loc:Tr Settings_MascotMoodSource}" Description="{loc:Tr Settings_MascotMoodSourceDescription}" IsEnabled="{Binding CanAnimateMascot}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.MascotMoodSourceOptions}" SelectedValue="{Binding MascotMoodSource}" />
+                </views:SettingRow>
+            </StackPanel>
+        </Border>
+        <!-- How much it moves, and what it does on its own account: each of those is a movement,
+             so only while it's animated at all. -->
+        <TextBlock Text="{loc:Tr Settings_SectionMascotMotion}" Style="{StaticResource GroupHeaderStyle}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel>
+                <views:SettingRow Title="{loc:Tr Settings_MascotAnimation}" Description="{loc:Tr Settings_MascotAnimationDescription}" IsEnabled="{Binding CanAnimateMascot}">
+                    <ComboBox Style="{StaticResource SettingComboStyle}" Width="150"
+                              ItemsSource="{x:Static vm:SettingsViewModel.MascotAnimationOptions}" SelectedValue="{Binding MascotAnimation}" />
+                </views:SettingRow>
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotWakesOnReset}" IsEnabled="{Binding CanMascotReact}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotWakesOnReset}" views:SettingRow.Description="{loc:Tr Settings_MascotWakesOnResetDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotStartlesOnJump}" IsEnabled="{Binding CanMascotReact}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotStartlesOnJump}" views:SettingRow.Description="{loc:Tr Settings_MascotStartlesOnJumpDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotHoldsSign}" IsEnabled="{Binding CanMascotReact}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotHoldsSign}" views:SettingRow.Description="{loc:Tr Settings_MascotHoldsSignDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotFollowsCursor}" IsEnabled="{Binding CanMascotReact}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotFollowsCursor}" views:SettingRow.Description="{loc:Tr Settings_MascotFollowsCursorDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding MascotIdleActs}" IsEnabled="{Binding CanMascotReact}"
+                          views:SettingRow.Title="{loc:Tr Settings_MascotIdleActs}" views:SettingRow.Description="{loc:Tr Settings_MascotIdleActsDescription}" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

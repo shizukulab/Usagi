@@ -1,0 +1,184 @@
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Interop;
+using Usagi.App.Localization;
+using Usagi.Core.Models;
+using Usagi.Platform.TrayIcon;
+using DrawingIcon = System.Drawing.Icon;
+using H.NotifyIcon;
+
+namespace Usagi.App.Tray;
+
+/// <summary>Owns the tray icon: click routing, right-click menu, and icon repainting on each usage update.</summary>
+public sealed class TrayIconController : IDisposable
+{
+    private readonly TrayIconRenderer _renderer;
+    private readonly TaskbarIcon _taskbarIcon;
+    private readonly ContextMenu _contextMenu = new();
+    private DrawingIcon? _currentIcon;
+
+    /// <summary>
+    /// The window to bring to the foreground for the menu a right-click on the tray icon opens:
+    /// a taskbar bar if there is one (see <see cref="Views.TaskbarBarWindow"/> for why), or else any window of the app.
+    /// </summary>
+    public Func<Window>? MenuOwner { get; set; }
+
+    public event Action? Clicked;
+    public event Action? RefreshRequested;
+    public event Action? SettingsRequested;
+    public event Action? ResetPositionRequested;
+    public event Action? ExitRequested;
+
+    /// <summary>Whether "Reset position" has anything to reset; checked each time the menu opens.</summary>
+    public Func<bool>? CanResetPosition { get; set; }
+
+    public event Action? FlyoutCompactToggled;
+    public event Action? FlyoutClickThroughToggled;
+    public event Action? TaskbarBarClickThroughToggled;
+
+    /// <summary>The toggles' current state; checked each time the menu opens.</summary>
+    public Func<bool>? IsFlyoutCompact { get; set; }
+    public Func<bool>? IsFlyoutClickThrough { get; set; }
+    public Func<bool>? IsTaskbarBarClickThrough { get; set; }
+
+    /// <summary>Whether the taskbar bars are on at all, i.e. whether their toggle applies.</summary>
+    public Func<bool>? IsTaskbarBarShown { get; set; }
+
+    public TrayIconController(TrayIconRenderer renderer)
+    {
+        _renderer = renderer;
+
+        // Segoe Fluent Icons glyphs: Refresh, Settings, Undo, PowerButton.
+        var refreshItem = CreateItem("Tray_Refresh", "\uE72C", () => RefreshRequested?.Invoke());
+        var settingsItem = CreateItem("Tray_Settings", "\uE713", () => SettingsRequested?.Invoke());
+        var resetPositionItem = CreateItem("Tray_ResetPosition", "\uE7A7", () => ResetPositionRequested?.Invoke());
+        var exitItem = CreateItem("Tray_Exit", "\uE7E8", () => ExitRequested?.Invoke());
+
+        // Toggles: the glyph is a check mark (Accept) while on and blank while off, set as the menu opens.
+        var flyoutCompactItem = CreateItem("Tray_FlyoutCompact", string.Empty, () => FlyoutCompactToggled?.Invoke());
+        var flyoutClickThroughItem = CreateItem("Tray_FlyoutClickThrough", string.Empty, () => FlyoutClickThroughToggled?.Invoke());
+        var taskbarBarClickThroughItem = CreateItem("Tray_TaskbarBarClickThrough", string.Empty, () => TaskbarBarClickThroughToggled?.Invoke());
+
+        var contextMenu = _contextMenu;
+        contextMenu.Items.Add(refreshItem);
+        contextMenu.Items.Add(settingsItem);
+        contextMenu.Items.Add(resetPositionItem);
+        contextMenu.Items.Add(new Separator());
+        contextMenu.Items.Add(flyoutCompactItem);
+        contextMenu.Items.Add(flyoutClickThroughItem);
+        contextMenu.Items.Add(taskbarBarClickThroughItem);
+        contextMenu.Items.Add(new Separator());
+        contextMenu.Items.Add(exitItem);
+        contextMenu.Opened += (_, _) =>
+        {
+            resetPositionItem.IsEnabled = CanResetPosition?.Invoke() ?? false;
+            SetChecked(flyoutCompactItem, IsFlyoutCompact?.Invoke() ?? false);
+            SetChecked(flyoutClickThroughItem, IsFlyoutClickThrough?.Invoke() ?? false);
+            SetChecked(taskbarBarClickThroughItem, IsTaskbarBarClickThrough?.Invoke() ?? false);
+            taskbarBarClickThroughItem.IsEnabled = IsTaskbarBarShown?.Invoke() ?? false;
+        };
+
+        // The menu isn't given to the icon to open on a right-click, but opened here: see MenuOwner.
+        _taskbarIcon = new TaskbarIcon { ToolTipText = "Usagi" };
+        _taskbarIcon.TrayLeftMouseUp += (_, _) => Clicked?.Invoke();
+        _taskbarIcon.TrayRightMouseUp += (_, _) =>
+        {
+            if (MenuOwner?.Invoke() is { } owner)
+                ShowMenu(owner);
+        };
+
+        Repaint();
+        _taskbarIcon.ForceCreate();
+    }
+
+    /// <summary>
+    /// Opens the tray icon's menu at the cursor, with <paramref name="owner"/> brought to the
+    /// foreground: what a right-click on the tray icon, the flyout or a taskbar bar does.
+    /// </summary>
+    public void ShowMenu(Window owner)
+    {
+        // The window comes to the foreground first, even a taskbar bar, which otherwise never
+        // does: a menu in a background app doesn't see the click elsewhere that should close it.
+        // (Not the menu itself, as for the tray icon: taking the focus once it's open makes it close.)
+        SetForegroundWindow(new WindowInteropHelper(owner).EnsureHandle());
+
+        _contextMenu.Placement = PlacementMode.MousePoint;
+        _contextMenu.HorizontalOffset = 0;
+        _contextMenu.VerticalOffset = 0;
+        _contextMenu.IsOpen = true;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    private static MenuItem CreateItem(string textKey, string glyph, Action onClick)
+    {
+        // The font is set on the TextBlock itself: the app's implicit TextBlock style would
+        // otherwise swap in the UI font and render the glyph as a box.
+        var icon = new TextBlock
+        {
+            Text = glyph,
+            FontFamily = (System.Windows.Media.FontFamily)System.Windows.Application.Current.Resources["IconFontFamily"],
+            FontSize = 16
+        };
+        var item = new MenuItem { Header = Loc.Get(textKey), Icon = icon };
+        item.Click += (_, _) => onClick();
+        Loc.LanguageChanged += () => item.Header = Loc.Get(textKey);
+        return item;
+    }
+
+    private static void SetChecked(MenuItem item, bool isChecked) => ((TextBlock)item.Icon).Text = isChecked ? "" : string.Empty;
+
+    private TrayIconContent _content = new(0, UsageStatusLevel.Safe, 0, UsageStatusLevel.Safe);
+    private TrayIconStyle _style;
+
+    /// <summary>How the icon shows the usage; changing it repaints the icon with the last usage.</summary>
+    public TrayIconStyle Style
+    {
+        get => _style;
+        set
+        {
+            if (_style == value)
+                return;
+            _style = value;
+            Repaint();
+        }
+    }
+
+    public void UpdateIcon(TrayIconContent content)
+    {
+        _content = content;
+        if (_style != TrayIconStyle.AppIcon) // which shows no usage: nothing to repaint
+            Repaint();
+    }
+
+    private void Repaint()
+    {
+        var newIcon = _style == TrayIconStyle.AppIcon ? LoadAppIcon() : _renderer.Render(_content, _style);
+        _taskbarIcon.Icon = newIcon;
+        _currentIcon?.Dispose();
+        _currentIcon = newIcon;
+    }
+
+    // The app's icon at the size the tray draws it, so it's the frame made for that size rather
+    // than a larger one scaled down.
+    private static DrawingIcon LoadAppIcon()
+    {
+        using var stream = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/AppIcon.ico")).Stream;
+        return new DrawingIcon(stream, GetSystemMetrics(SmallIconWidth), GetSystemMetrics(SmallIconHeight));
+    }
+
+    private const int SmallIconWidth = 49;  // SM_CXSMICON
+    private const int SmallIconHeight = 50; // SM_CYSMICON
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
+    public void Dispose()
+    {
+        _currentIcon?.Dispose();
+        _taskbarIcon.Dispose();
+    }
+}
