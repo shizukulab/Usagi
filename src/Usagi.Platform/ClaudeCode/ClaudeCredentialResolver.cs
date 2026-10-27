@@ -11,7 +11,8 @@ namespace Usagi.Platform.ClaudeCode;
 internal static class ClaudeCredentialResolver
 {
     /// <summary>
-    /// Every usable (unexpired) credential, in source order, for a caller to try until one is accepted.
+    /// Every usable (unexpired) credential, in source order (and, within the desktop app, best first),
+    /// for a caller to try until one is accepted.
     /// Lazy: a source that starts a process (WSL) runs only once the caller enumerates past the earlier
     /// ones, so stopping at the first that works never touches it. If none are usable, yields a single
     /// lookup with null credentials, its location naming where an expired one was found (or null if none).
@@ -22,16 +23,17 @@ internal static class ClaudeCredentialResolver
         var anyUsable = false;
         foreach (var source in ClaudeCredentialSource.EnumerateAll())
         {
-            if (source.TryRead() is not { } credentials)
-                continue;
-            if (credentials.IsExpired(DateTimeOffset.Now))
+            foreach (var credentials in source.ReadAll())
             {
-                firstExpired ??= source;
-                continue;
-            }
+                if (credentials.IsExpired(DateTimeOffset.Now))
+                {
+                    firstExpired ??= source;
+                    continue;
+                }
 
-            anyUsable = true;
-            yield return new ClaudeCredentialLookup(credentials, source.Location);
+                anyUsable = true;
+                yield return new ClaudeCredentialLookup(credentials, source.Location);
+            }
         }
 
         if (!anyUsable)

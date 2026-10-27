@@ -9,23 +9,24 @@ namespace Usagi.Platform.ClaudeCode;
 /// </summary>
 internal sealed class ClaudeCredentialSource
 {
-    private readonly Func<ClaudeCodeCredentials?> _read;
+    private readonly Func<IReadOnlyList<ClaudeCodeCredentials>> _read;
 
-    private ClaudeCredentialSource(ClaudeCredentialLocation location, Func<ClaudeCodeCredentials?> read)
+    private ClaudeCredentialSource(ClaudeCredentialLocation location, Func<IReadOnlyList<ClaudeCodeCredentials>> read)
     {
         Location = location;
         _read = read;
     }
 
+    // A source with a single credentials file.
     private ClaudeCredentialSource(string displayName, bool isWsl, Func<ClaudeCodeCredentials?> read)
-        : this(new ClaudeCredentialLocation(displayName, isWsl), read)
+        : this(new ClaudeCredentialLocation(displayName, isWsl), () => read() is { } credentials ? [credentials] : [])
     {
     }
 
     public ClaudeCredentialLocation Location { get; }
 
     public static ClaudeCredentialSource Desktop { get; } =
-        new(new ClaudeCredentialLocation("Claude Desktop", IsWsl: false, IsDesktop: true), ClaudeDesktopCredentials.TryRead);
+        new(new ClaudeCredentialLocation("Claude Desktop", IsWsl: false, IsDesktop: true), ClaudeDesktopCredentials.ReadAll);
 
     public static ClaudeCredentialSource Windows { get; } =
         new("Windows", isWsl: false, ClaudeCodeCredentialReader.TryRead);
@@ -47,5 +48,9 @@ internal sealed class ClaudeCredentialSource
             yield return ForWsl(distro);
     }
 
-    public ClaudeCodeCredentials? TryRead() => _read();
+    /// <summary>
+    /// The credentials found here, best first; empty if none. Only the desktop app can hold several
+    /// (its cache keeps a token per scope set), and any of them may be the one the API still accepts.
+    /// </summary>
+    public IReadOnlyList<ClaudeCodeCredentials> ReadAll() => _read();
 }

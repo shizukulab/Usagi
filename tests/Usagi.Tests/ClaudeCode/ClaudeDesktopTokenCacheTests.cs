@@ -7,6 +7,9 @@ public class ClaudeDesktopTokenCacheTests
 {
     private const string BaseKey = "acct:a|b:c:https://api.anthropic.com";
 
+    // Before every expiry used below (they're small Unix-ms values), so those entries all count as unexpired.
+    private static readonly DateTimeOffset Now = DateTimeOffset.FromUnixTimeMilliseconds(500);
+
     [Fact]
     public void EncryptedKey_ReadsOsCryptKey()
     {
@@ -64,7 +67,7 @@ public class ClaudeDesktopTokenCacheTests
         }
         """;
 
-        var credentials = ClaudeDesktopTokenCache.SelectToken(json);
+        var credentials = ClaudeDesktopTokenCache.SelectToken(json, Now);
 
         // Both scopes beat either alone, even though the single-scope entries expire much later;
         // among the two "both" entries, the later expiry wins.
@@ -84,17 +87,17 @@ public class ClaudeDesktopTokenCacheTests
 
         // The Claude Code session token is the one meant for reading its usage, so it wins even
         // though a plain inference+profile token expires much later (that later one can be stale).
-        Assert.Equal("session", ClaudeDesktopTokenCache.SelectToken(json)!.AccessToken);
+        Assert.Equal("session", ClaudeDesktopTokenCache.SelectToken(json, Now)!.AccessToken);
     }
 
     [Fact]
-    public void SelectToken_ChoosesAcrossSeveralCaches()
+    public void RankTokens_RanksAcrossSeveralCaches()
     {
         var v2 = $$"""{ "{{BaseKey}}:user:inference user:profile": { "token": "v2-early", "expiresAt": 1000 } }""";
         var v1 = $$"""{ "{{BaseKey}}:user:inference user:profile": { "token": "v1-late", "expiresAt": 2000 } }""";
 
         // Neither cache alone is authoritative; the later-expiring entry wins regardless of which holds it.
-        Assert.Equal("v1-late", ClaudeDesktopTokenCache.SelectToken([v2, v1])!.AccessToken);
+        Assert.Equal(["v1-late", "v2-early"], ClaudeDesktopTokenCache.RankTokens([v2, v1], Now).Select(c => c.AccessToken));
     }
 
     [Fact]
@@ -107,7 +110,7 @@ public class ClaudeDesktopTokenCacheTests
         }
         """;
 
-        Assert.Equal("inference-late", ClaudeDesktopTokenCache.SelectToken(json)!.AccessToken);
+        Assert.Equal("inference-late", ClaudeDesktopTokenCache.SelectToken(json, Now)!.AccessToken);
     }
 
     [Fact]
@@ -121,7 +124,7 @@ public class ClaudeDesktopTokenCacheTests
         }
         """;
 
-        Assert.Equal("only-real", ClaudeDesktopTokenCache.SelectToken(json)!.AccessToken);
+        Assert.Equal("only-real", ClaudeDesktopTokenCache.SelectToken(json, Now)!.AccessToken);
     }
 
     [Fact]
@@ -129,7 +132,7 @@ public class ClaudeDesktopTokenCacheTests
     {
         var json = $$"""{ "{{BaseKey}}:user:inference user:profile": { "token": "no-expiry" } }""";
 
-        var credentials = ClaudeDesktopTokenCache.SelectToken(json);
+        var credentials = ClaudeDesktopTokenCache.SelectToken(json, Now);
 
         Assert.Equal("no-expiry", credentials!.AccessToken);
         Assert.Null(credentials.ExpiresAtUnixMs);
@@ -138,8 +141,70 @@ public class ClaudeDesktopTokenCacheTests
     [Fact]
     public void SelectToken_ReturnsNull_WhenEmptyOrMalformed()
     {
-        Assert.Null(ClaudeDesktopTokenCache.SelectToken("{}"));
-        Assert.Null(ClaudeDesktopTokenCache.SelectToken("not json"));
-        Assert.Null(ClaudeDesktopTokenCache.SelectToken("[]"));
+        Assert.Null(ClaudeDesktopTokenCache.SelectToken("{}", Now));
+        Assert.Null(ClaudeDesktopTokenCache.SelectToken("not json", Now));
+        Assert.Null(ClaudeDesktopTokenCache.SelectToken("[]", Now));
+    }
+
+    [Fact]
+    public void SelectToken_PrefersAnUnexpiredTokenOverAnExpiredSessionToken()
+    {
+        var json = $$"""
+        {
+          "{{BaseKey}}:user:inference user:file_upload user:profile user:sessions:claude_code": { "token": "session", "expiresAt": 1000 },
+          "{{BaseKey}}:user:inference user:file_upload user:profile": { "token": "long-lived", "expiresAt": 9000 }
+        }
+        """;
+
+        // The desktop app only renews the session token while Claude Code runs inside it, so it can
+        // sit expired for days; an expired token is never worth trying ahead of a live one.
+        var afterSessionExpired = DateTimeOffset.FromUnixTimeMilliseconds(2000);
+        Assert.Equal("long-lived", ClaudeDesktopTokenCache.SelectToken(json, afterSessionExpired)!.AccessToken);
+    }
+
+    [Fact]
+    public void RankTokens_ListsEveryTokenOnce_SoARejectedOneCanFallBack()
+    {
+        var v2 = $$"""
+        {
+          "{{BaseKey}}:user:inference user:file_upload user:profile": { "token": "stale", "expiresAt": 8000 },
+          "{{BaseKey}}:user:profile": { "token": "shared", "expiresAt": 3000 }
+        }
+        """;
+        var v1 = $$"""
+        {
+          "{{BaseKey}}:user:inference user:file_upload user:profile": { "token": "good", "expiresAt": 9000 },
+          "{{BaseKey}}:user:profile": { "token": "shared", "expiresAt": 3000 }
+        }
+        """;
+
+        // A live-looking token can still be rejected, so the rest stay available behind it.
+        Assert.Equal(["good", "stale", "shared"], ClaudeDesktopTokenCache.RankTokens([v2, v1], Now).Select(c => c.AccessToken));
+    }
+
+    [Fact]
+    public void CurrentAccountId_ReadsLastKnownAccount()
+    {
+        Assert.Equal("acct-1", ClaudeDesktopTokenCache.CurrentAccountId("""{ "lastKnownAccountUuid": "acct-1", "locale": "ja" }"""));
+        Assert.Null(ClaudeDesktopTokenCache.CurrentAccountId("""{ "lastKnownAccountUuid": "" }"""));
+        Assert.Null(ClaudeDesktopTokenCache.CurrentAccountId("{}"));
+        Assert.Null(ClaudeDesktopTokenCache.CurrentAccountId("not json"));
+    }
+
+    [Fact]
+    public void RankTokens_LeavesOutAnotherAccountsEntries()
+    {
+        const string json = """
+        {
+          "acct:old|client:org:https://api.anthropic.com:user:inference user:profile": { "token": "old-account", "expiresAt": 9000 },
+          "acct:new|client:org:https://api.anthropic.com:user:inference user:profile": { "token": "new-account", "expiresAt": 1000 },
+          "unrecognised-key:user:inference": { "token": "unknown-owner", "expiresAt": 2000 }
+        }
+        """;
+
+        // After switching accounts the old one's token can still be accepted, which would show the
+        // wrong account's usage without any error; a key that names no account is kept.
+        Assert.Equal(["new-account", "unknown-owner"], ClaudeDesktopTokenCache.RankTokens([json], Now, "new").Select(c => c.AccessToken));
+        Assert.Equal(3, ClaudeDesktopTokenCache.RankTokens([json], Now).Count);
     }
 }

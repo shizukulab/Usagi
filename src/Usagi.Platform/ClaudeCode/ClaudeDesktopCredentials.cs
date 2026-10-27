@@ -22,15 +22,16 @@ internal static class ClaudeDesktopCredentials
     private const int GcmNonceLength = 12;
     private const int GcmTagLength = 16;
 
-    public static ClaudeCodeCredentials? TryRead()
+    /// <summary>Every cached token, best first (see <see cref="ClaudeDesktopTokenCache.RankTokens"/>); empty if none can be read.</summary>
+    public static IReadOnlyList<ClaudeCodeCredentials> ReadAll()
     {
         foreach (var directory in DataDirectories())
-            if (TryReadFrom(directory) is { } credentials)
+            if (ReadFrom(directory) is { Count: > 0 } credentials)
                 return credentials;
-        return null;
+        return [];
     }
 
-    private static ClaudeCodeCredentials? TryReadFrom(string directory)
+    private static IReadOnlyList<ClaudeCodeCredentials>? ReadFrom(string directory)
     {
         if (ReadFile(Path.Combine(directory, ClaudeDesktopTokenCache.ConfigFileName)) is not { } configJson ||
             ReadFile(Path.Combine(directory, ClaudeDesktopTokenCache.LocalStateFileName)) is not { } localStateJson ||
@@ -40,12 +41,12 @@ internal static class ClaudeDesktopCredentials
             return null;
         }
 
-        // Decrypt every cache and choose across them together: the usable token isn't always in the
+        // Decrypt every cache and rank across them together: the usable token isn't always in the
         // newest layout, so stopping at the first cache can pick a stale entry the API then rejects.
         var caches = ClaudeDesktopTokenCache.EncryptedCacheValues(configJson)
             .Select(value => Decrypt(value, key))
             .OfType<string>();
-        return ClaudeDesktopTokenCache.SelectToken(caches);
+        return ClaudeDesktopTokenCache.RankTokens(caches, DateTimeOffset.Now, ClaudeDesktopTokenCache.CurrentAccountId(configJson));
     }
 
     // %APPDATA%\Claude for a normal install, plus the Microsoft Store (MSIX) build's redirected

@@ -11,7 +11,7 @@ namespace Usagi.Core.ClaudeCode;
 /// This holds only the parts that don't need Windows crypto: the desktop app stores the cache the
 /// way Chromium stores cookies (a DPAPI-wrapped AES key in "Local State", the cache itself
 /// AES-GCM-encrypted in config.json), so platform code decrypts and hands the plaintext to
-/// <see cref="SelectToken"/>. Everything here only parses JSON, so it stays testable off Windows.
+/// <see cref="RankTokens"/>. Everything here only parses JSON, so it stays testable off Windows.
 /// Read-only throughout: nothing is written back.
 /// </summary>
 public static class ClaudeDesktopTokenCache
@@ -28,13 +28,18 @@ public static class ClaudeDesktopTokenCache
     public static readonly string[] CacheKeys = ["oauth:tokenCacheV2", "oauth:tokenCache"];
 
     // The cache can hold several entries, including stale ones the API now rejects, and expiry is a
-    // poor signal of which is live (a dead token can outlast a good one). The Claude Code session
-    // token carries user:sessions:claude_code — it's the one meant for reading Claude Code usage, so
-    // it's preferred outright. Failing that, fall back to scope coverage (user:inference, then
-    // user:profile) and the latest expiry, matching how other monitors pick a token.
+    // poor signal of which is live (a dead token can outlast a good one), so every entry is offered
+    // in rank order for the caller to try. An expired entry always ranks last: the desktop app only
+    // renews the Claude Code session token while Claude Code runs inside it, so that one can sit
+    // expired for days next to long-lived tokens that still work. Among unexpired entries, the
+    // session token (user:sessions:claude_code, the one meant for reading Claude Code usage) comes
+    // first, then scope coverage (user:inference, then user:profile), then the latest expiry.
     private const string SessionScope = "user:sessions:claude_code";
     private const string InferenceScope = "user:inference";
     private const string ProfileScope = "user:profile";
+
+    // Each entry's key starts "acct:<account uuid>|", naming whose token it is.
+    private const string AccountKeyPrefix = "acct:";
 
     /// <summary>The base64 blob under <c>os_crypt.encrypted_key</c> in the desktop app's "Local State", or null.</summary>
     public static string? EncryptedKey(string localStateJson)
@@ -46,6 +51,29 @@ public static class ClaudeDesktopTokenCache
                    osCrypt.TryGetProperty("encrypted_key", out var key) &&
                    key.ValueKind == JsonValueKind.String
                 ? key.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The account the desktop app is signed in to (<c>lastKnownAccountUuid</c> in config.json), or
+    /// null. Its token cache can still hold entries for an account signed in before, whose tokens
+    /// keep working — so without this filter the app could quietly show that other account's usage.
+    /// </summary>
+    public static string? CurrentAccountId(string configJson)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(configJson);
+            return doc.RootElement.ValueKind == JsonValueKind.Object &&
+                   doc.RootElement.TryGetProperty("lastKnownAccountUuid", out var id) &&
+                   id.ValueKind == JsonValueKind.String &&
+                   id.GetString() is { Length: > 0 } accountId
+                ? accountId
                 : null;
         }
         catch (JsonException)
@@ -87,20 +115,23 @@ public static class ClaudeDesktopTokenCache
         }
     }
 
-    /// <summary>Picks the token from a single decrypted cache (see the multi-cache overload).</summary>
-    public static ClaudeCodeCredentials? SelectToken(string decryptedJson) => SelectToken([decryptedJson]);
+    /// <summary>The first token <see cref="RankTokens"/> offers from a single decrypted cache, or null.</summary>
+    public static ClaudeCodeCredentials? SelectToken(string decryptedJson, DateTimeOffset now, string? accountId = null)
+        => RankTokens([decryptedJson], now, accountId).FirstOrDefault();
 
     /// <summary>
-    /// Picks the token to use across every decrypted cache: the Claude Code session token
-    /// (<c>user:sessions:claude_code</c>) first, otherwise the entry whose scopes best cover what the
-    /// usage endpoint needs (<c>user:inference</c>, then <c>user:profile</c>), and among equals the one
-    /// that expires latest. Several caches are considered together because the newest layout isn't always
-    /// where the usable token is. Entries without a token are skipped; null if none has one.
+    /// Every token across the decrypted caches, best first: unexpired before expired, then the Claude
+    /// Code session token (<c>user:sessions:claude_code</c>), then the entries whose scopes best cover
+    /// what the usage endpoint needs (<c>user:inference</c>, then <c>user:profile</c>), and among equals
+    /// the one that expires latest. Several caches are considered together because the newest layout
+    /// isn't always where the usable token is. Entries without a token are skipped, and a token found
+    /// in more than one cache is listed once. Given <paramref name="accountId"/> (see
+    /// <see cref="CurrentAccountId"/>), entries keyed to another account are left out; an entry whose
+    /// key doesn't name an account is kept, so a change in the key format doesn't hide every token.
     /// </summary>
-    public static ClaudeCodeCredentials? SelectToken(IEnumerable<string> decryptedCaches)
+    public static IReadOnlyList<ClaudeCodeCredentials> RankTokens(IEnumerable<string> decryptedCaches, DateTimeOffset now, string? accountId = null)
     {
-        ClaudeCodeCredentials? best = null;
-        (bool Session, bool Inference, bool Profile, long Expiry) bestRank = default;
+        var ranked = new List<((bool Live, bool Session, bool Inference, bool Profile, long Expiry) Rank, ClaudeCodeCredentials Credentials)>();
 
         foreach (var decryptedJson in decryptedCaches)
         {
@@ -124,7 +155,8 @@ public static class ClaudeDesktopTokenCache
                     if (entry.Value.ValueKind != JsonValueKind.Object ||
                         !entry.Value.TryGetProperty("token", out var tokenElement) ||
                         tokenElement.GetString() is not { } token ||
-                        string.IsNullOrWhiteSpace(token))
+                        string.IsNullOrWhiteSpace(token) ||
+                        IsForAnotherAccount(entry.Name, accountId))
                     {
                         continue;
                     }
@@ -132,17 +164,30 @@ public static class ClaudeDesktopTokenCache
                     long? expiresAt = entry.Value.TryGetProperty("expiresAt", out var exp) && exp.TryGetInt64(out var value)
                         ? value
                         : null;
+                    var credentials = new ClaudeCodeCredentials(token, expiresAt);
                     // The entry's key spells out its scopes, so a substring check is enough to rank it.
-                    var rank = (entry.Name.Contains(SessionScope), entry.Name.Contains(InferenceScope), entry.Name.Contains(ProfileScope), expiresAt ?? long.MinValue);
-                    if (best is null || rank.CompareTo(bestRank) > 0)
-                    {
-                        best = new ClaudeCodeCredentials(token, expiresAt);
-                        bestRank = rank;
-                    }
+                    var rank = (!credentials.IsExpired(now), entry.Name.Contains(SessionScope), entry.Name.Contains(InferenceScope),
+                        entry.Name.Contains(ProfileScope), expiresAt ?? long.MinValue);
+                    ranked.Add((rank, credentials));
                 }
             }
         }
 
-        return best;
+        return ranked
+            .OrderByDescending(item => item.Rank)
+            .DistinctBy(item => item.Credentials.AccessToken)
+            .Select(item => item.Credentials)
+            .ToList();
+    }
+
+    private static bool IsForAnotherAccount(string entryKey, string? accountId)
+    {
+        if (accountId is null || !entryKey.StartsWith(AccountKeyPrefix, StringComparison.Ordinal))
+            return false;
+        var separator = entryKey.IndexOf('|', AccountKeyPrefix.Length);
+        if (separator < 0)
+            return false;
+        var entryAccount = entryKey.AsSpan(AccountKeyPrefix.Length, separator - AccountKeyPrefix.Length);
+        return !entryAccount.Equals(accountId, StringComparison.OrdinalIgnoreCase);
     }
 }
