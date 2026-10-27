@@ -83,8 +83,64 @@ public class UsageFetcherTests
     private readonly Environment _environment = new();
     private readonly Api _api = new();
 
+    // What Claude Code last reported to its status line, if anything.
+    private ClaudeUsage? _reported;
+
     private UsageFetcher CreateFetcher() =>
-        new(new ClaudeCodeUsageClient(new HttpClient(_api)), _environment, _state, _clock);
+        new(new ClaudeCodeUsageClient(new HttpClient(_api)), _environment, _state, _clock, () => _reported);
+
+    private static ClaudeUsage Reported(DateTimeOffset at) => new() { SessionPercentage = 12, WeeklyPercentage = 34, LastUpdated = at };
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RecentStatusLineReport_IsUsedWithoutAskingTheApi(bool avoidTokenUsage)
+    {
+        _reported = Reported(Start - TimeSpan.FromMinutes(4));
+
+        var result = await CreateFetcher().FetchAsync(avoidTokenUsage);
+
+        Assert.Equal(12, result.Usage!.SessionPercentage);
+        Assert.Equal(0, _api.UsageCalls + _api.MessagesCalls);
+        Assert.Null(_state.LastUsageEndpointCall); // nothing asked, so nothing to space out
+    }
+
+    [Fact]
+    public async Task OldStatusLineReport_GivesWayToTheApi()
+    {
+        _reported = Reported(Start - UsageFetcher.StatusLineFreshFor - TimeSpan.FromSeconds(1));
+
+        var result = await CreateFetcher().FetchAsync(avoidTokenUsage: true);
+
+        Assert.Equal(30, result.Usage!.SessionPercentage);
+        Assert.Equal(1, _api.UsageCalls);
+    }
+
+    [Fact]
+    public async Task OldStatusLineReport_IsShown_WhenNoSignInIsUsable()
+    {
+        // The stranded case: Claude Code's credentials file went stale, but Claude Code still reports.
+        _reported = Reported(Start - TimeSpan.FromHours(2));
+        _environment.Lookup = new(null, Windows);
+
+        var result = await CreateFetcher().FetchAsync(avoidTokenUsage: true);
+
+        Assert.Null(result.Error);
+        Assert.Equal(12, result.Usage!.SessionPercentage);
+        Assert.Equal(Start - TimeSpan.FromHours(2), result.Usage.LastUpdated); // shown as hours old, not as new
+    }
+
+    [Fact]
+    public async Task OldStatusLineReport_DoesNotHideARateLimit()
+    {
+        _reported = Reported(Start - TimeSpan.FromHours(2));
+        _api.Status = HttpStatusCode.TooManyRequests;
+
+        var result = await CreateFetcher().FetchAsync(avoidTokenUsage: true);
+
+        Assert.True(result.UsageEndpointRateLimited);
+        Assert.True(_state.UsageEndpointRateLimited);
+    }
 
     [Fact]
     public async Task TokenFree_ReadsUsageAndRecordsWhenTheEndpointWasCalled()

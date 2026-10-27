@@ -6,6 +6,7 @@
     <Project Path="src/Usagi.App/Usagi.App.csproj" />
     <Project Path="src/Usagi.Core/Usagi.Core.csproj" />
     <Project Path="src/Usagi.Platform/Usagi.Platform.csproj" />
+    <Project Path="src/Usagi.StatusLine/Usagi.StatusLine.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Usagi.Tests/Usagi.Tests.csproj" />

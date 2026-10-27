@@ -157,6 +157,9 @@ public partial class SettingsViewModel : ObservableObject
     private bool _alwaysOnTop;
 
     [ObservableProperty]
+    private bool _useClaudeCodeStatusLine;
+
+    [ObservableProperty]
     private bool _flyoutCompact;
 
     [ObservableProperty]
@@ -268,6 +271,8 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnShowFlyoutOnStartupChanged(bool value) => Apply();
 
     partial void OnAlwaysOnTopChanged(bool value) => Apply();
+
+    partial void OnUseClaudeCodeStatusLineChanged(bool value) => Apply();
 
     partial void OnWeeklyNotificationsEnabledChanged(bool value) => Apply();
 
@@ -390,6 +395,7 @@ public partial class SettingsViewModel : ObservableObject
             TrayIconStyle = settings.TrayIconStyle;
             ShowFlyoutOnStartup = settings.ShowFlyoutOnStartup;
             AlwaysOnTop = settings.AlwaysOnTop;
+            UseClaudeCodeStatusLine = settings.UseClaudeCodeStatusLine;
             FlyoutClickThrough = settings.FlyoutClickThrough;
             FlyoutCompact = settings.FlyoutCompact;
             TaskbarBarClickThrough = settings.TaskbarBarClickThrough;
@@ -460,6 +466,7 @@ public partial class SettingsViewModel : ObservableObject
                 settings.TrayIconStyle = TrayIconStyle;
                 settings.ShowFlyoutOnStartup = ShowFlyoutOnStartup;
                 settings.AlwaysOnTop = AlwaysOnTop;
+                settings.UseClaudeCodeStatusLine = UseClaudeCodeStatusLine;
                 settings.FlyoutClickThrough = FlyoutClickThrough;
                 settings.FlyoutCompact = FlyoutCompact;
                 settings.TaskbarBarClickThrough = TaskbarBarClickThrough;

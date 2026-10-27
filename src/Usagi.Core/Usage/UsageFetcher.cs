@@ -22,23 +22,35 @@ public interface IUsageFetchState
 }
 
 /// <summary>
-/// Fetches usage end to end: locate Claude Code CLI's own credentials (Windows-native
-/// or WSL, whichever has them), then read usage the way the current mode says:
+/// Fetches usage end to end. What Claude Code last reported to its status line comes first: it
+/// needs no token and no request, so while it's recent nothing else is asked. Otherwise: locate
+/// Claude credentials (the desktop app, Windows-native or WSL Claude Code, whichever has them),
+/// then read usage the way the current mode says:
 /// <list type="bullet">
 ///   <item>Token-using: a one-token Messages API prompt (consumes a tiny amount of usage; not
 ///   rate-limited like the usage endpoint, so it can refresh often).</item>
 ///   <item>Token-free: the free usage endpoint only (no usage consumed; rate-limited, hence
 ///   the fixed 3-minute interval and the back-off after a 429).</item>
 /// </list>
-/// An expired or rejected sign-in is reported (a rejected one with a sign-in option), never
-/// refreshed by the app. Credential discovery may shell out to wsl.exe, so it runs off the calling thread.
+/// If that fails too, the last status line report is shown however old (the flyout says how old)
+/// rather than an error. An expired or rejected sign-in is otherwise reported, never refreshed by
+/// the app. Credential discovery may shell out to wsl.exe, so it runs off the calling thread.
 /// </summary>
+/// <param name="statusLineUsage">The usage Claude Code last reported to its status line, or null if none.</param>
 public sealed class UsageFetcher(
     ClaudeCodeUsageClient usageClient,
     IClaudeCodeEnvironment environment,
     IUsageFetchState state,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null,
+    Func<ClaudeUsage?>? statusLineUsage = null)
 {
+    /// <summary>
+    /// How long a status line report stands in for asking the API. Claude Code reports with every
+    /// response, so while it's in use reports are seconds apart; one this old means it's idle, and
+    /// usage elsewhere (claude.ai, the desktop app) would go unseen.
+    /// </summary>
+    public static readonly TimeSpan StatusLineFreshFor = TimeSpan.FromMinutes(5);
+
     // The timer ticks a little before the time the call itself is stamped (credential lookup runs
     // first), so a wait of exactly one interval would push the retry a whole tick later.
     private static readonly TimeSpan TimerSlack = TimeSpan.FromSeconds(30);
@@ -50,6 +62,19 @@ public sealed class UsageFetcher(
 
     /// <param name="avoidTokenUsage">Token-free mode: only the free usage endpoint is asked.</param>
     public async Task<UsageFetchResult> FetchAsync(bool avoidTokenUsage, CancellationToken ct = default)
+    {
+        var reported = statusLineUsage?.Invoke();
+        if (reported is not null && _time.GetUtcNow() - reported.LastUpdated <= StatusLineFreshFor)
+            return UsageFetchResult.Success(reported);
+
+        var result = await FetchFromApiAsync(avoidTokenUsage, ct);
+        // Nothing could be read (no usable sign-in, an error): an older report beats an error banner.
+        return result is { Usage: null, RetryAfter: null, UsageEndpointRateLimited: false } && reported is not null
+            ? UsageFetchResult.Success(reported)
+            : result;
+    }
+
+    private async Task<UsageFetchResult> FetchFromApiAsync(bool avoidTokenUsage, CancellationToken ct)
     {
         if (avoidTokenUsage && state.LastUsageEndpointCall is { } lastCall)
         {

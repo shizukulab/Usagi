@@ -17,6 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Usagi.Core\Usagi.Core.csproj" />
     <ProjectReference Include="..\Usagi.Platform\Usagi.Platform.csproj" />
+    <!-- Not used by the app's code: referenced so UsagiStatusLine.exe is built and shipped next to Usagi.exe. -->
+    <ProjectReference Include="..\Usagi.StatusLine\Usagi.StatusLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -78,7 +78,8 @@ public partial class App : System.Windows.Application
         Loc.Apply(settings.Language);
 
         _claudeCode = new ClaudeCodeEnvironment();
-        _usageFetcher = new UsageFetcher(new ClaudeCodeUsageClient(_httpClient), _claudeCode, _stateStore);
+        _usageFetcher = new UsageFetcher(new ClaudeCodeUsageClient(_httpClient), _claudeCode, _stateStore,
+            statusLineUsage: ClaudeStatusLineInstaller.ReadSavedUsage);
         _launchAtLoginService = new RunKeyLaunchAtLoginService(
             appName: AppName,
             executablePathProvider: () => Environment.ProcessPath ?? Environment.GetCommandLineArgs()[0]);
@@ -154,7 +155,9 @@ public partial class App : System.Windows.Application
             if (_refreshTimer.Interval != RefreshTimerInterval())
                 _refreshTimer.Interval = RefreshTimerInterval();
             ApplyAppearance();
+            ApplyStatusLineSetting();
         };
+        ApplyStatusLineSetting();
 
         // Picks up a finished sign-in (or Claude Code renewing its token) immediately.
         _credentialsWatcher = new CredentialsFileWatcher();
@@ -195,6 +198,26 @@ public partial class App : System.Windows.Application
         _httpClient.Dispose();
         _singleInstanceMutex?.Dispose();
         base.OnExit(e);
+    }
+
+    // What the status line setting was last put into Claude Code's settings as (null: not yet this run).
+    private bool? _appliedStatusLineSetting;
+
+    /// <summary>
+    /// Registers the status line helper in Claude Code's settings, or takes it out, as the setting
+    /// says. Registered afresh on each start, so the path follows the app's folder if it moved.
+    /// </summary>
+    private void ApplyStatusLineSetting()
+    {
+        var wanted = _settingsStore.Current.UseClaudeCodeStatusLine;
+        if (_appliedStatusLineSetting == wanted)
+            return;
+        _appliedStatusLineSetting = wanted;
+        // Taking it out when it isn't there leaves the file untouched.
+        if (wanted)
+            ClaudeStatusLineInstaller.Install();
+        else
+            ClaudeStatusLineInstaller.Uninstall();
     }
 
     // async void on purpose: an unexpected exception then reaches

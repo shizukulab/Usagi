@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    UsagiStatusLine.exe: what Claude Code runs as its status line. It saves the usage Claude Code
+    passes it for Usagi.exe to show, and starts on every status line update, so it stays tiny: no
+    Windows-specific code, only Core's parsing.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>UsagiStatusLine</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Usagi.Core\Usagi.Core.csproj" />
+  </ItemGroup>
+
+</Project>

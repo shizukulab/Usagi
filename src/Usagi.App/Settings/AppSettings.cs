@@ -223,6 +223,13 @@ public sealed class AppSettings : IJsonOnDeserialized
     /// </summary>
     public bool AvoidTokenUsage { get; set; } = true;
 
+    /// <summary>
+    /// On (default): UsagiStatusLine.exe is kept registered as Claude Code's status line (in front
+    /// of the user's own, which keeps showing), so Claude Code hands over its usage with every
+    /// response — no token read, no usage consumed. Off: it's taken out of Claude Code's settings.
+    /// </summary>
+    public bool UseClaudeCodeStatusLine { get; set; } = true;
+
     [JsonConverter(typeof(JsonStringEnumConverter<AppTheme>))]
     public AppTheme Theme { get; set; } = AppTheme.System;
 

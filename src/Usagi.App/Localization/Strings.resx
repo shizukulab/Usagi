@@ -73,6 +73,8 @@
   <data name="Settings_NavDisplay" xml:space="preserve"><value>Display</value></data>
   <data name="Settings_NavOther" xml:space="preserve"><value>Other</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
+  <data name="Settings_StatusLine" xml:space="preserve"><value>Receive from Claude Code's status line</value></data>
+  <data name="Settings_StatusLineDescription" xml:space="preserve"><value>Each time Claude Code responds, it hands over its current usage. No token is used and no usage is consumed. Registers a status line in Claude Code's settings (~/.claude/settings.json); your own status line keeps showing.</value></data>
   <data name="Settings_TestConnection" xml:space="preserve"><value>Test connection</value></data>
   <data name="Settings_TestConnectionToolTip" xml:space="preserve"><value>Checks that usage can be read, the same way regular updates do (using about 10 tokens unless “Don't consume usage” is on).</value></data>
   <data name="Settings_InstallLink" xml:space="preserve"><value>How to install Claude Code</value></data>

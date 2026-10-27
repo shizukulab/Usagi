@@ -21,6 +21,9 @@
                     </StackPanel>
                 </DockPanel>
                 <Border Style="{StaticResource CardDividerStyle}" />
+                <CheckBox Style="{StaticResource ToggleRowStyle}" IsChecked="{Binding UseClaudeCodeStatusLine}"
+                          views:SettingRow.Title="{loc:Tr Settings_StatusLine}" views:SettingRow.Description="{loc:Tr Settings_StatusLineDescription}" />
+                <Border Style="{StaticResource CardDividerStyle}" />
                 <views:SettingRow Title="{loc:Tr Settings_TestConnection}" Description="{loc:Tr Settings_TestConnectionDescription}">
                     <Button Content="{loc:Tr Settings_TestButton}" Command="{Binding TestConnectionCommand}"
                             Height="30" Padding="14,0"

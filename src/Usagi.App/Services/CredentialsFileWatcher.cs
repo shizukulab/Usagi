@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows.Threading;
 using Usagi.Core.ClaudeCode;
+using Usagi.Core.StatusLine;
 
 namespace Usagi.App.Services;
 
@@ -13,6 +14,8 @@ namespace Usagi.App.Services;
 ///   <item>The Claude desktop app's config.json — but only when its token cache changes. The
 ///   desktop app rewrites that file for many other reasons (window position, settings), and
 ///   reacting to each would refresh for nothing (and, in token-using mode, send a prompt).</item>
+///   <item>The usage UsagiStatusLine.exe saves from Claude Code's status line, so a new reading
+///   shows as soon as Claude Code reports it.</item>
 /// </list>
 /// WSL credentials and the Microsoft Store build of the desktop app aren't watched; the periodic
 /// refresh still picks them up.
@@ -24,13 +27,14 @@ public sealed class CredentialsFileWatcher : IDisposable
 
     private readonly FileSystemWatcher? _cliWatcher;
     private readonly FileSystemWatcher? _desktopWatcher;
+    private readonly FileSystemWatcher? _statusLineWatcher;
     private readonly DispatcherTimer _debounceTimer;
     private readonly string _desktopConfigPath = Path.Combine(ClaudeDesktopTokenCache.ConfigDirectory, ClaudeDesktopTokenCache.ConfigFileName);
 
     // What the desktop app's token cache looked like last time, so an unrelated rewrite of its config is ignored.
     private string _desktopCacheSignature;
 
-    // Set by a CLI file event: that file holds nothing but credentials, so any change counts.
+    // Set by a CLI credentials or status line usage event: those files hold nothing else, so any change counts.
     private bool _cliChanged;
 
     public CredentialsFileWatcher()
@@ -41,6 +45,9 @@ public sealed class CredentialsFileWatcher : IDisposable
         _desktopCacheSignature = ReadDesktopCacheSignature() ?? string.Empty;
         _cliWatcher = Watch(ClaudeCodeCredentialReader.CredentialsFilePath, () => _cliChanged = true);
         _desktopWatcher = Watch(_desktopConfigPath, () => { });
+        // The helper creates its folder on first use, which may be after this starts.
+        Directory.CreateDirectory(Path.GetDirectoryName(StatusLineUsage.SnapshotPath)!);
+        _statusLineWatcher = Watch(StatusLineUsage.SnapshotPath, () => _cliChanged = true);
     }
 
     public event Action? Changed;
@@ -49,6 +56,7 @@ public sealed class CredentialsFileWatcher : IDisposable
     {
         _cliWatcher?.Dispose();
         _desktopWatcher?.Dispose();
+        _statusLineWatcher?.Dispose();
         _debounceTimer.Stop();
     }
 

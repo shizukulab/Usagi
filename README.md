@@ -39,10 +39,11 @@ Claude Code の使用量 (5 時間のセッション枠・7 日間の週間枠) 
 インストーラーはないので、次の手順で手動で削除します。
 
 1. 設定の **全般** で **Windows へのサインイン時に起動** をオフにします (自動起動の登録はレジストリにあるため、フォルダーを消しても残ります)
-2. トレイアイコンからアプリを終了し、展開したフォルダーを削除します
-3. 設定も消す場合は、`%APPDATA%\Usagi` フォルダーを削除します
+2. 設定の **アカウント** で **Claude Code のステータスラインから受け取る** をオフにします (Claude Code の設定に登録したステータスラインを取り除き、もとのステータスラインがあれば元に戻します)
+3. トレイアイコンからアプリを終了し、展開したフォルダーを削除します
+4. 設定も消す場合は、`%APPDATA%\Usagi` フォルダーと `%LOCALAPPDATA%\Usagi` フォルダーを削除します
 
-1 を忘れてフォルダーを消した場合は、タスク マネージャーの **スタートアップ アプリ** で Usagi を無効にするか、レジストリの `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` から `Usagi` の値を削除してください。
+2 を忘れてフォルダーを消した場合は、Claude Code の `~/.claude/settings.json` の `statusLine` から `UsagiStatusLine.exe` を取り除いてください (`UsagiStatusLine.exe --tee | ` の後ろが、もとのステータスラインです)。1 を忘れた場合は、タスク マネージャーの **スタートアップ アプリ** で Usagi を無効にするか、レジストリの `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` から `Usagi` の値を削除してください。
 
 ## ビルドと起動
 
@@ -182,6 +183,7 @@ Windows 11 にはタスクバーに部品を埋め込む公式の仕組みがな
 | 項目 | 内容 |
 |---|---|
 | Claude Code のアカウント | どのサインイン (デスクトップアプリ / Claude Code のアカウント) を使っているかを表示します。サインインや切り替えは Claude 側で行います |
+| Claude Code のステータスラインから受け取る | Claude Code が応答するたびに、そのときの使用量を受け取ります (既定はオン)。詳しくは [仕組み](#仕組み) を参照してください |
 | 接続テスト | **確認** を押すと、実際に使用量を取得できるか確認できます |
 
 **使用量の取得**
@@ -308,13 +310,24 @@ Claude Code をしばらく使わずにサインインの有効期限が切れ�
 
 ## 仕組み
 
-Claude デスクトップアプリか Claude Code の認証情報を読み取り (書き込みはしません)、Anthropic の API から使用量を取得します。次の順に探し、最初に見つかった有効なものを使います。
+### Claude Code のステータスライン
+
+設定の **Claude Code のステータスラインから受け取る** がオン (既定) のとき、Usagi は起動時に Claude Code のユーザー設定 (`~/.claude/settings.json`、`CLAUDE_CONFIG_DIR` があればその下) の `statusLine` に、Usagi.exe と同じフォルダーにある `UsagiStatusLine.exe` を登録します。Claude Code は応答を受け取るたびに、ステータスラインのコマンドにセッションの情報を JSON で渡します。その中の `rate_limits` (5 時間枠と週間枠の使用率とリセット時刻) を `UsagiStatusLine.exe` が `%LOCALAPPDATA%\Usagi\statusline-usage.json` に保存し、Usagi はそれを表示します。トークンは読み取らず、リクエストも送らないため、使用量を消費しません。
+
+- 自分のステータスラインがすでにある場合は、`UsagiStatusLine.exe --tee | <もとのコマンド>` の形で前につなぎます。もとのコマンドには Claude Code の入力がそのまま渡り、表示も変わりません。ステータスラインがない場合は、`5h 9% · 7d 10%` のように使用率を表示します
+- 届くのは、Pro / Max プランで、セッションで最初の応答を受け取ったあとです ([Claude Code のドキュメント](https://code.claude.com/docs/en/statusline))。ターミナルの Claude Code では確認済みです。Team / Enterprise プランや、VS Code 拡張・デスクトップアプリの Code タブで届くかどうかは確認していません
+- 直近 5 分以内に届いた値があるときは、それを表示し、下の方法での取得はしません。Claude Code を使っていない間は届かないので、5 分を過ぎると下の方法で取得します。下の方法で取得できないとき (サインインの期限切れなど) は、最後に届いた値を表示します (フライアウトの「○ 分前に更新」で古さが分かります)
+- オフにすると、登録したステータスラインを取り除き、もとのステータスラインがあれば元に戻します
+
+### 認証情報からの取得
+
+ステータスラインから値が届いていないときは、Claude デスクトップアプリか Claude Code の認証情報を読み取り (書き込みはしません)、Anthropic の API から使用量を取得します。次の順に探し、最初に見つかった有効なものを使います。
 
 1. Claude デスクトップアプリ: `%APPDATA%\Claude\config.json` (Microsoft Store 版はそのパッケージ内の同じ場所)。デスクトップアプリはトークンを Chromium と同じ方式で暗号化して保存しているため、同じフォルダーの `Local State` にある鍵を Windows の DPAPI で復号して読み取ります。この鍵は Windows のユーザーに結び付いていて、本人のアカウントでしか復号できません
 2. Windows の Claude Code: `%USERPROFILE%\.claude\.credentials.json` (`CLAUDE_CONFIG_DIR` があればその下)
 3. WSL の Claude Code: 各ディストリビューションの `~/.claude/.credentials.json` (`wsl.exe` 経由)
 
-デスクトップアプリのトークンが複数ある場合は、Claude Code 用のもの (`user:sessions:claude_code` スコープ) を優先します。
+デスクトップアプリのトークンが複数ある場合は、期限切れでないものを、Claude Code 用のもの (`user:sessions:claude_code` スコープ) → スコープの広いもの → 期限の遅いもの の順に試し、拒否されたら次を試します。デスクトップアプリが今サインインしているアカウント (`config.json` の `lastKnownAccountUuid`) 以外のトークンは使いません。
 
 | 設定 | 取得方法 | 使用量の消費 | 更新間隔 |
 |---|---|---|---|
@@ -343,6 +356,7 @@ Haiku 4.5 が廃止された場合は、使えるモデルの一覧 (取得に�
 |---|---|---|
 | `RefreshIntervalSeconds` | 更新間隔 (秒、10〜3600) | `60` |
 | `AvoidTokenUsage` | 使用量を消費しない | `true` |
+| `UseClaudeCodeStatusLine` | Claude Code のステータスラインから受け取る | `true` |
 | `NotificationsEnabled` | 使用率の通知 | `true` |
 | `NotificationThresholds` | 通知するセッション使用率 (1〜100、5 個まで) | `[75, 90, 95]` |
 | `WeeklyNotificationsEnabled` | 週間枠も通知する | `true` |

@@ -73,6 +73,8 @@
   <data name="Settings_NavDisplay" xml:space="preserve"><value>表示</value></data>
   <data name="Settings_NavOther" xml:space="preserve"><value>その他</value></data>
   <data name="Settings_Account" xml:space="preserve"><value>アカウント</value></data>
+  <data name="Settings_StatusLine" xml:space="preserve"><value>Claude Code のステータスラインから受け取る</value></data>
+  <data name="Settings_StatusLineDescription" xml:space="preserve"><value>Claude Code が応答するたびに、そのときの使用量を受け取ります。トークンは使わず、使用量も消費しません。Claude Code の設定 (~/.claude/settings.json) にステータスラインを登録します。もとのステータスラインもそのまま表示されます。</value></data>
   <data name="Settings_TestConnection" xml:space="preserve"><value>接続テスト</value></data>
   <data name="Settings_TestConnectionToolTip" xml:space="preserve"><value>定期更新と同じ方法で、使用量を取得できるか確認します (「使用量を消費しない」がオフなら、約 10 トークンを消費します)。</value></data>
   <data name="Settings_InstallLink" xml:space="preserve"><value>Claude Code のインストール方法</value></data>
